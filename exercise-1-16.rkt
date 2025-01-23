@@ -1,11 +1,8 @@
 #lang sicp
 
-;; 1.16
+(#%require "math.rkt")
 
-(define (square x)
-  (* x x))
-(define (even? n)
-  (= (remainder n 2) 0))
+;; 1.16
 
 (define (fast-expt b n)
   (cond ((= n 0) 1)
@@ -17,15 +14,15 @@
 (fast-expt 2 32)
 (fast-expt 2 1000)
 
-(define (fast-expt2 b n)
-  (define (iterate n a)
+(define (fast-expt-iterative b n)
+  (define (iterate b n a)
     (cond ((= n 0) a)
-	  ((even? n) (iterate (/ n 2) (iterate (/ n 2) a)))
-	  (else (iterate (- n 1) (* b a)))))
-  (iterate n 1))
+	  ((even? n) (iterate (square b) (/ n 2) a))
+	  (else (iterate b (- n 1) (* b a)))))
+  (iterate b n 1))
 
-(fast-expt2 2 16)
-(fast-expt2 2 31)
-(fast-expt2 2 32)
-(fast-expt2 2 1000)
+(fast-expt-iterative 2 16)
+(fast-expt-iterative 2 31)
+(fast-expt-iterative 2 32)
+(fast-expt-iterative 2 1000)
 
