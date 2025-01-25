@@ -1,5 +1,7 @@
 #lang sicp
 
+(#%require "math.rkt")
+
 (#%provide expmod)
 (define (expmod base exp m)
   (cond ((= exp 0) 1)

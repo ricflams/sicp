@@ -1,28 +1,28 @@
 #lang sicp
 
-;; 1.22
-(display "exercise 1.22\n")
+;; 1.23
+(display "exercise 1.23\n")
+(#%require "expmod.rkt")
 
-(define (smallest-divisor n)
-  (define (find-divisor n test-divisor)
-    (define (square x) (* x x))
-    (define (divides? a b)
-      (= (remainder b a) 0))
-    (cond ((> (square test-divisor) n) n)
-	  ((divides? test-divisor n) test-divisor)
-	  (else (find-divisor n (+ test-divisor 1)))))
-  (find-divisor n 2))
-(define (prime? n)
-  (= (smallest-divisor n) n))
+(define (fermat-test n)
+  (define (try-it a)
+    (= (expmod a n n) a))
+  (try-it (+ 1 (random (- n 1)))))
+
+(define (fast-prime? n times)
+  (cond ((= times 0) true)
+	((fermat-test n) (fast-prime? n (- times 1)))
+	(else false)))
+
 
 
 (define (timed-prime-test n)
   (start-prime-test n (runtime)))
 
 (define (start-prime-test n start-time)
-  (if (prime? n)
+  (if (fast-prime? n 10)  ;; test fast-prime
       (report-prime n (- (runtime) start-time))
-      false))
+      #f))
 
 (define (report-prime n elapsed-time)
   (display n)
@@ -47,7 +47,17 @@
       (find-next-prime (+ x 2))))
 
 
-(test-for-primes 10000000000 3)
-(test-for-primes 100000000000 3)
-(test-for-primes 1000000000000 3)
-(test-for-primes 10000000000000 1)
+(define (repeat func arg times)
+  (if (= times 1)
+      (func arg)
+      (repeat func arg (- times 1))))
+
+(test-for-primes 10000000 3)
+(test-for-primes 100000000 3)
+(test-for-primes 1000000000 3)
+(test-for-primes 4000000000 3)
+
+
+
+
+

@@ -1,16 +1,18 @@
 #lang sicp
 
-;; 1.22
-(display "exercise 1.22\n")
+;; 1.23
+(display "exercise 1.23\n")
 
 (define (smallest-divisor n)
   (define (find-divisor n test-divisor)
     (define (square x) (* x x))
     (define (divides? a b)
       (= (remainder b a) 0))
+    (define (next n)  ;; (next n) is only change from 1.22
+      (if (= n 2) 3 (+ n 2)))
     (cond ((> (square test-divisor) n) n)
 	  ((divides? test-divisor n) test-divisor)
-	  (else (find-divisor n (+ test-divisor 1)))))
+	  (else (find-divisor n (next test-divisor)))))
   (find-divisor n 2))
 (define (prime? n)
   (= (smallest-divisor n) n))
@@ -22,7 +24,7 @@
 (define (start-prime-test n start-time)
   (if (prime? n)
       (report-prime n (- (runtime) start-time))
-      false))
+      #f))
 
 (define (report-prime n elapsed-time)
   (display n)
@@ -51,3 +53,8 @@
 (test-for-primes 100000000000 3)
 (test-for-primes 1000000000000 3)
 (test-for-primes 10000000000000 1)
+
+
+
+
+
