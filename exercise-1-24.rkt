@@ -1,7 +1,7 @@
 #lang sicp
 
-;; 1.23
-(display "exercise 1.23\n")
+;; 1.24
+(display "exercise 1.24\n")
 (#%require "expmod.rkt")
 
 (define (fermat-test n)
