@@ -1,8 +1,10 @@
 #lang sicp
 
-(#%require "math.rkt")
+;; exercise 1.16
+(display "exercise 1.16")
+(newline)
 
-;; 1.16
+(#%require "math.rkt")
 
 (define (fast-expt b n)
   (cond ((= n 0) 1)

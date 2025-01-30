@@ -1,8 +1,8 @@
 #lang sicp
 
-;; 1.25
-(display "exercise 1.25\n")
-
+;; exercise 1.25
+(display "exercise 1.25")
+(newline)
 
 ;;(#%require "expmod.rkt") -- added inline here
 (#%require "math.rkt")

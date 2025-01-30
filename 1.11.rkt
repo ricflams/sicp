@@ -1,6 +1,9 @@
 #lang sicp
 
-;; 1.11
+;; exercise 1.11
+(display "exercise 1.11")
+(newline)
+
 (define (f n)
   (if (< n 3)
       n
@@ -8,7 +11,8 @@
        (f (- n 1))
        (* 2 (f (- n 2)))
        (* 3 (f (- n 3))))))
-(display "f recursive\n")
+
+(display "f recursive:\n")
 (f 1)
 (f 2)
 (f 3)
@@ -25,7 +29,8 @@
   (if (< n 3)
       n
       (iter 2 1 0 (- n 2))))
-(display "f iterative\n")
+
+(display "f iterative:\n")
 (f2 1)
 (f2 2)
 (f2 3)

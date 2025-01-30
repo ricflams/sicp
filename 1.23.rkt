@@ -1,7 +1,8 @@
 #lang sicp
 
-;; 1.23
-(display "exercise 1.23\n")
+;; exercise 1.23
+(display "exercise 1.23")
+(newline)
 
 (define (smallest-divisor n)
   (define (find-divisor n test-divisor)

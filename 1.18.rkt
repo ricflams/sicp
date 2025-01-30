@@ -1,9 +1,10 @@
 #lang sicp
 
-(display "exercise 1.18\n")
-(#%require "math.rkt")
+;; exercise 1.18
+(display "exercise 1.18")
+(newline)
 
-;; 1.18
+(#%require "math.rkt")
 
 (define (mult a b)
   (define (double x) (* x 2))

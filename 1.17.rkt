@@ -1,6 +1,9 @@
 #lang sicp
 
-;; 1.17
+;; exercise 1.17
+(display "exercise 1.17")
+(newline)
+
 (define (mult a b)
   (define (double x) (* x 2))
   (define (halve x) (/ x 2))

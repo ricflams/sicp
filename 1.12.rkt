@@ -1,6 +1,8 @@
 #lang sicp
 
-;; 1.12
+;; exercise 1.12
+(display "exercise 1.12")
+(newline)
 
 (define (tri row col)
   ;; let both row and col start at 1
@@ -24,3 +26,4 @@
 (print-odd " " (tri 3 1) (tri 3 2) (tri 3 3) "")
 (print-eve (tri 4 1) (tri 4 2) (tri 4 3) (tri 4 4) "")
 (print-odd (tri 5 1) (tri 5 2) (tri 5 3) (tri 5 4) (tri 5 5))
+

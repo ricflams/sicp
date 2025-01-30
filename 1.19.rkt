@@ -1,9 +1,10 @@
 #lang sicp
 
-;; 1.19
-(display "exercise 1.19\n")
-(#%require "math.rkt")
+;; exercise 1.19
+(display "exercise 1.19")
+(newline)
 
+(#%require "math.rkt")
 
 (define (fib n)
   (define (fib-iter a b count)

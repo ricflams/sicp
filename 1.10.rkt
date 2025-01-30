@@ -1,6 +1,8 @@
 #lang sicp
 
-;; 1.10
+;; exercise 1.10
+(display "exercise 1.10")
+(newline)
 
 (define (A x y)
   (cond ((= y 0) 0)
@@ -15,5 +17,5 @@
 ;; (f n) = (A 0 n) = 2n
 ;; (g n) = (A 1 n) = (A 0 (A 1 n-1) = 2(A 1 n-1) = ... 2^(n-1)(A 1 1) = 2^(n-1)2 = 2^n 
 ;; (h n) = (A 2 n) = (A 1 (A 2 n-1) = (A 1 (A 2 n-.....
-
+;; TODO
 

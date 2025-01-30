@@ -1,3 +1,11 @@
+#lang sicp
+
+;; exercise 1.15
+(display "exercise 1.15")
+(newline)
+
+;; TODO
+
 ;; 1.15
 ;; 12.15/3^calls < 0.1 =>
 ;; 12.15/0.1 < 3^calls =>
