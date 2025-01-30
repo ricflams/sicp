@@ -1,3 +1,5 @@
+#lang sicp
+
 ;; 1.10
 
 (define (A x y)
