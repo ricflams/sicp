@@ -26,4 +26,5 @@
 ;;
 ;; For angle=12.15 then n=cuberoot(121.5) which is just below 5 (5^3 = 125)
 (display "p is called 5 times")
+(display "order is O(cuberoot(angle))")
 (newline)
