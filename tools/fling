@@ -3,8 +3,24 @@
 # Config file to store the post ID and edit token
 CONFIG_FILE="$HOME/.fling"
 
-# Check if jq is installed, and install it if missing (only when using -i)
-install_jq_if_needed() {
+# Function to ensure required dependencies are installed
+install_dependencies_if_needed() {
+    # Check if curl is installed
+    if ! command -v curl &> /dev/null; then
+        echo "curl is required but not installed. Installing now..."
+        if [[ -f /etc/debian_version ]]; then
+            sudo apt update && sudo apt install -y curl
+        elif [[ -f /etc/redhat-release ]]; then
+            sudo yum install -y curl
+        elif [[ -f /etc/arch-release ]]; then
+            sudo pacman -Sy curl
+        else
+            echo "Unsupported Linux distribution. Please install curl manually."
+            exit 1
+        fi
+    fi
+
+    # Check if jq is installed
     if ! command -v jq &> /dev/null; then
         echo "jq is required but not installed. Installing now..."
         if [[ -f /etc/debian_version ]]; then
@@ -22,7 +38,7 @@ install_jq_if_needed() {
 
 # Function to create a new post
 create_post() {
-    install_jq_if_needed  # Ensure jq is installed before proceeding
+    install_dependencies_if_needed  # Ensure dependencies are installed
     TEXT="$1"
     RESPONSE=$(curl -s -X POST -d "content=$TEXT" https://write.as/api/posts)
     POST_ID=$(echo "$RESPONSE" | jq -r '.id')
