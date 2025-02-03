@@ -1,26 +1,37 @@
 #!/bin/bash
 
-# Set variables for the Pastebin API and user credentials
-API_KEY="your_pastebin_api_key"
-EMAIL="your_pastebin_email"
-PASSWORD="your_pastebin_password"
+# Set path to configuration file
 CONFIG_FILE="$HOME/.pb"
 
-# Check if .pb config file exists and load it
-if [[ -f "$CONFIG_FILE" ]]; then
-    source "$CONFIG_FILE"
-fi
+# Function to prompt for username and API key and save them to the config file
+prompt_for_credentials() {
+    echo "Please enter your Pastebin username:"
+    read -r username
+    echo "Please enter your Pastebin API key:"
+    read -r api_key
 
-# Function to create a new paste
+    # Save credentials to .pb file
+    echo "username=$username" > "$CONFIG_FILE"
+    echo "api_key=$api_key" >> "$CONFIG_FILE"
+}
+
+# Function to create a new paste (with optional username and API key prompt)
 create_paste() {
+    # Prompt for username and API key if not already stored
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        prompt_for_credentials
+    else
+        source "$CONFIG_FILE"
+    fi
+
     # Hardcoded initial text for the first paste
     initial_text="Welcome to pb"
 
     # Create the paste using the Pastebin API
     response=$(curl -s -X POST "https://pastebin.com/api/api_post.php" \
-        -d "api_dev_key=$API_KEY" \
-        -d "api_user_name=$EMAIL" \
-        -d "api_user_password=$PASSWORD" \
+        -d "api_dev_key=$api_key" \
+        -d "api_user_name=$username" \
+        -d "api_user_password=$password" \
         -d "api_option=save" \
         -d "api_paste_data=$initial_text" \
         -d "api_paste_name=username@hostname" \
@@ -32,7 +43,7 @@ create_paste() {
     # If paste ID is found, save it to the .pb config file
     if [[ ! -z "$paste_id" ]]; then
         echo "Paste created successfully. Paste ID: $paste_id"
-        echo "paste_id=$paste_id" > "$CONFIG_FILE"
+        echo "paste_id=$paste_id" >> "$CONFIG_FILE"
         echo "Paste URL: https://pastebin.com/$paste_id"
     else
         echo "Error creating paste: $response"
@@ -52,9 +63,9 @@ update_paste() {
 
     # Update the paste with the new content using the Pastebin API
     response=$(curl -s -X POST "https://pastebin.com/api/api_post.php" \
-        -d "api_dev_key=$API_KEY" \
-        -d "api_user_name=$EMAIL" \
-        -d "api_user_password=$PASSWORD" \
+        -d "api_dev_key=$api_key" \
+        -d "api_user_name=$username" \
+        -d "api_user_password=$password" \
         -d "api_option=edit" \
         -d "api_paste_key=$paste_id" \
         -d "api_paste_data=$new_content" \
@@ -69,9 +80,9 @@ update_paste() {
 append_paste() {
     # Fetch the current paste's content
     current_content=$(curl -s -X POST "https://pastebin.com/api/api_post.php" \
-        -d "api_dev_key=$API_KEY" \
-        -d "api_user_name=$EMAIL" \
-        -d "api_user_password=$PASSWORD" \
+        -d "api_dev_key=$api_key" \
+        -d "api_user_name=$username" \
+        -d "api_user_password=$password" \
         -d "api_option=show_paste" \
         -d "api_paste_key=$paste_id")
 
@@ -90,13 +101,13 @@ append_paste() {
 
 # Function to handle displaying help
 show_help() {
-    echo "Usage: pb [options]"
+    echo "Usage: pb [options] [text]"
     echo "Options:"
-    echo "  -i       Create a new paste (initial text)"
+    echo "  -i       Init a new pastebin note"
     echo "  -f FILE  Update paste with content from the file"
     echo "  -a       Append new content to the existing paste"
     echo "  -h       Show this help message"
-    echo "If no options are provided, text will be uploaded directly."
+    echo "If no options are provided, upload the provided text as a new paste."
 }
 
 # If no arguments are provided, display help
