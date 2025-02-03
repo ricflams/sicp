@@ -40,6 +40,12 @@ install_dependencies_if_needed() {
 create_post() {
     install_dependencies_if_needed  # Ensure dependencies are installed
     TEXT="$1"
+    
+    if [[ -z "$TEXT" ]]; then
+        echo "Error: No content provided to publish!"
+        exit 1
+    fi
+
     RESPONSE=$(curl -s -X POST -d "content=$TEXT" https://write.as/api/posts)
     POST_ID=$(echo "$RESPONSE" | jq -r '.id')
     EDIT_TOKEN=$(echo "$RESPONSE" | jq -r '.token')
@@ -64,6 +70,7 @@ update_post() {
     EDIT_TOKEN=$(awk '{print $2}' "$CONFIG_FILE")
 
     TEXT="$1"
+    
     curl -s -X PUT -H "Authorization: Token $EDIT_TOKEN" --data-urlencode "content=$TEXT" "https://write.as/api/posts/$POST_ID"
     echo "Post updated: https://write.as/$POST_ID"
 }
