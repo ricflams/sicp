@@ -57,7 +57,10 @@ create_post() {
         --arg title "$USERNAME@$HOSTNAME - $TIMESTAMP" \
         '{body: $body, title: $title}')
 
-    RESPONSE=$(curl -s -X POST -H "Content-Type: application/json" -d "$JSON_PAYLOAD" https://write.as/api/posts)
+    RESPONSE=$(curl -s -X POST \
+        -H "Content-Type: application/json" \
+        -d "$JSON_PAYLOAD" \
+        https://write.as/api/posts)
     
     # Extract post ID and edit token from the 'data' field
     POST_ID=$(echo "$RESPONSE" | jq -r '.data.id')
@@ -82,6 +85,11 @@ update_post() {
     POST_ID=$(awk '{print $1}' "$CONFIG_FILE")
     EDIT_TOKEN=$(awk '{print $2}' "$CONFIG_FILE")
 
+    if [[ -z "$EDIT_TOKEN" || "$EDIT_TOKEN" == "null" ]]; then
+        echo "Error: Invalid or missing token in $CONFIG_FILE"
+        exit 1
+    fi
+
     TEXT="$1"
     
     # Create JSON payload
@@ -89,8 +97,20 @@ update_post() {
         --arg body "$TEXT" \
         '{body: $body}')
 
-    curl -s -X PUT -H "Authorization: Token $EDIT_TOKEN" -H "Content-Type: application/json" --data "$JSON_PAYLOAD" "https://write.as/api/posts/$POST_ID"
-    echo "Post updated: https://write.as/$POST_ID"
+    RESPONSE=$(curl -s -w "%{http_code}" -o /tmp/response.txt -X PUT \
+        -H "Authorization: Token $EDIT_TOKEN" \
+        -H "Content-Type: application/json" \
+        --data "$JSON_PAYLOAD" \
+        "https://write.as/api/posts/$POST_ID")
+    
+    # Check if the update was successful
+    HTTP_CODE=$(tail -n 1 /tmp/response.txt)
+    if [[ "$HTTP_CODE" -eq 200 ]]; then
+        echo "Post updated: https://write.as/$POST_ID"
+    else
+        echo "Error updating post: HTTP $HTTP_CODE"
+        cat /tmp/response.txt
+    fi
 }
 
 # Ensure correct usage
