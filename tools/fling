@@ -36,16 +36,11 @@ install_dependencies_if_needed() {
     fi
 }
 
-# Function to create a new post
-create_post() {
-    install_dependencies_if_needed  # Ensure dependencies are installed
+# Common function to send a post request (create or update)
+send_post_request() {
     TEXT="$1"
+    AUTH_HEADER="$2"
     
-    if [[ -z "$TEXT" ]]; then
-        echo "Error: No content provided to publish!"
-        exit 1
-    fi
-
     # Get username and hostname for the title
     USERNAME=$(whoami)
     HOSTNAME=$(hostname)
@@ -56,12 +51,38 @@ create_post() {
         --arg body "$TEXT" \
         --arg title "$USERNAME@$HOSTNAME - $TIMESTAMP" \
         '{body: $body, title: $title}')
-
-    RESPONSE=$(curl -s -X POST \
-        -H "Content-Type: application/json" \
-        -d "$JSON_PAYLOAD" \
-        https://write.as/api/posts)
     
+    # Choose whether it's create or update based on Authorization header
+    if [[ -z "$AUTH_HEADER" ]]; then
+        RESPONSE=$(curl -s -X POST \
+            -H "Content-Type: application/json" \
+            -d "$JSON_PAYLOAD" \
+            https://write.as/api/posts)
+    else
+        POST_ID="$3"
+        RESPONSE=$(curl -s -w "%{http_code}" -X POST \
+            -H "Authorization: Token $AUTH_HEADER" \
+            -H "Content-Type: application/json" \
+            --data "$JSON_PAYLOAD" \
+            "https://write.as/api/posts/$POST_ID")
+    fi
+
+    echo "$RESPONSE"
+}
+
+# Function to create a new post
+create_post() {
+    install_dependencies_if_needed  # Ensure dependencies are installed
+    TEXT="$1"
+    
+    if [[ -z "$TEXT" ]]; then
+        echo "Error: No content provided to publish!"
+        exit 1
+    fi
+
+    # Send post request to create a new post
+    RESPONSE=$(send_post_request "$TEXT" "")
+
     # Extract post ID and edit token from the 'data' field
     POST_ID=$(echo "$RESPONSE" | jq -r '.data.id')
     EDIT_TOKEN=$(echo "$RESPONSE" | jq -r '.data.token')
@@ -92,24 +113,16 @@ update_post() {
 
     TEXT="$1"
     
-    # Create JSON payload
-    JSON_PAYLOAD=$(jq -n \
-        --arg body "$TEXT" \
-        '{body: $body}')
+    # Send post request to update an existing post
+    RESPONSE=$(send_post_request "$TEXT" "$EDIT_TOKEN" "$POST_ID")
 
-    RESPONSE=$(curl -s -w "%{http_code}" -o /tmp/response.txt -X PUT \
-        -H "Authorization: Token $EDIT_TOKEN" \
-        -H "Content-Type: application/json" \
-        --data "$JSON_PAYLOAD" \
-        "https://write.as/api/posts/$POST_ID")
-    
     # Check if the update was successful
-    HTTP_CODE=$(tail -n 1 /tmp/response.txt)
+    HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
     if [[ "$HTTP_CODE" -eq 200 ]]; then
         echo "Post updated: https://write.as/$POST_ID"
     else
         echo "Error updating post: HTTP $HTTP_CODE"
-        cat /tmp/response.txt
+        echo "$RESPONSE"
     fi
 }
 
