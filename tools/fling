@@ -39,8 +39,9 @@ install_dependencies_if_needed() {
 # Common function to send a post request (create or update)
 send_post_request() {
     TEXT="$1"
-    AUTH_HEADER="$2"
-    
+    TOKEN="$2"
+    POST_ID="$3"
+
     # Get username and hostname for the title
     USERNAME=$(whoami)
     HOSTNAME=$(hostname)
@@ -50,18 +51,17 @@ send_post_request() {
     JSON_PAYLOAD=$(jq -n \
         --arg body "$TEXT" \
         --arg title "$USERNAME@$HOSTNAME - $TIMESTAMP" \
-        '{body: $body, title: $title}')
-    
-    # Choose whether it's create or update based on Authorization header
-    if [[ -z "$AUTH_HEADER" ]]; then
+        --arg token "$TOKEN" \
+        '{token: $token, body: $body, title: $title}')
+
+    # Choose whether it's create or update based on POST_ID
+    if [[ -z "$POST_ID" ]]; then
         RESPONSE=$(curl -s -X POST \
             -H "Content-Type: application/json" \
             -d "$JSON_PAYLOAD" \
             https://write.as/api/posts)
     else
-        POST_ID="$3"
         RESPONSE=$(curl -s -w "%{http_code}" -X POST \
-            -H "Authorization: Token $AUTH_HEADER" \
             -H "Content-Type: application/json" \
             --data "$JSON_PAYLOAD" \
             "https://write.as/api/posts/$POST_ID")
@@ -81,7 +81,7 @@ create_post() {
     fi
 
     # Send post request to create a new post
-    RESPONSE=$(send_post_request "$TEXT" "")
+    RESPONSE=$(send_post_request "$TEXT" "" "")
 
     # Extract post ID and edit token from the 'data' field
     POST_ID=$(echo "$RESPONSE" | jq -r '.data.id')
@@ -106,8 +106,8 @@ update_post() {
     POST_ID=$(awk '{print $1}' "$CONFIG_FILE")
     EDIT_TOKEN=$(awk '{print $2}' "$CONFIG_FILE")
 
-    if [[ -z "$EDIT_TOKEN" || "$EDIT_TOKEN" == "null" ]]; then
-        echo "Error: Invalid or missing token in $CONFIG_FILE"
+    if [[ -z "$POST_ID" || "$POST_ID" == "null" ]]; then
+        echo "Error: No valid post found to update."
         exit 1
     fi
 
