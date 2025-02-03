@@ -46,7 +46,18 @@ create_post() {
         exit 1
     fi
 
-    RESPONSE=$(curl -s -X POST -d "content=$TEXT" https://write.as/api/posts)
+    # Get username and hostname for the title
+    USERNAME=$(whoami)
+    HOSTNAME=$(hostname)
+    TIMESTAMP=$(date --utc +'%Y-%m-%dT%H:%M:%SZ')
+
+    # Create JSON payload with username@hostname in the title
+    JSON_PAYLOAD=$(jq -n \
+        --arg body "$TEXT" \
+        --arg title "$USERNAME@$HOSTNAME - $TIMESTAMP" \
+        '{body: $body, title: $title}')
+
+    RESPONSE=$(curl -s -X POST -H "Content-Type: application/json" -d "$JSON_PAYLOAD" https://write.as/api/posts)
     POST_ID=$(echo "$RESPONSE" | jq -r '.id')
     EDIT_TOKEN=$(echo "$RESPONSE" | jq -r '.token')
     POST_URL="https://write.as/$POST_ID"
@@ -71,7 +82,12 @@ update_post() {
 
     TEXT="$1"
     
-    curl -s -X PUT -H "Authorization: Token $EDIT_TOKEN" --data-urlencode "content=$TEXT" "https://write.as/api/posts/$POST_ID"
+    # Create JSON payload
+    JSON_PAYLOAD=$(jq -n \
+        --arg body "$TEXT" \
+        '{body: $body}')
+
+    curl -s -X PUT -H "Authorization: Token $EDIT_TOKEN" -H "Content-Type: application/json" --data "$JSON_PAYLOAD" "https://write.as/api/posts/$POST_ID"
     echo "Post updated: https://write.as/$POST_ID"
 }
 
