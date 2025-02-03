@@ -57,16 +57,17 @@ send_post_request() {
     # Choose whether it's create or update based on POST_ID
     if [[ -z "$POST_ID" ]]; then
         # Create a new post
-        curl -s -X POST \
+        RESPONSE=$(curl -s -X POST \
             -H "Content-Type: application/json" \
             -d "$JSON_PAYLOAD" \
-            https://write.as/api/posts
+            https://write.as/api/posts)
+        echo "$RESPONSE"
     else
         # Update an existing post
-        curl -s -X POST \
+        RESPONSE=$(curl -s -X POST \
             -H "Content-Type: application/json" \
             --data "$JSON_PAYLOAD" \
-            "https://write.as/api/posts/$POST_ID"
+            "https://write.as/api/posts/$POST_ID" > /dev/null)  # Suppress output
     fi
 }
 
@@ -113,7 +114,7 @@ update_post() {
 
     TEXT="$1"
     
-    # Send post request to update an existing post
+    # Send post request to update an existing post (response suppressed)
     send_post_request "$TEXT" "$EDIT_TOKEN" "$POST_ID"
 
     echo "Post updated: https://write.as/$POST_ID"
