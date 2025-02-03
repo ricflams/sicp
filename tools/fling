@@ -60,13 +60,13 @@ send_post_request() {
         curl -s -X POST \
             -H "Content-Type: application/json" \
             -d "$JSON_PAYLOAD" \
-            https://write.as/api/posts
+            https://write.as/api/posts > /dev/null
     else
         # Update an existing post
         curl -s -X POST \
             -H "Content-Type: application/json" \
             --data "$JSON_PAYLOAD" \
-            "https://write.as/api/posts/$POST_ID"
+            "https://write.as/api/posts/$POST_ID" > /dev/null
     fi
 }
 
@@ -88,55 +88,4 @@ create_post() {
     EDIT_TOKEN=$(echo "$RESPONSE" | jq -r '.data.token')
 
     if [[ "$POST_ID" != "null" ]]; then
-        echo "$POST_ID $EDIT_TOKEN" > "$CONFIG_FILE"
-        POST_URL="https://write.as/$POST_ID"
-        echo "Post created: $POST_URL"
-    else
-        echo "Error creating post: $RESPONSE"
-    fi
-}
-
-# Function to update an existing post
-update_post() {
-    if [[ ! -f "$CONFIG_FILE" ]]; then
-        echo "No existing post found. Use -i to create one first!"
-        exit 1
-    fi
-
-    POST_ID=$(awk '{print $1}' "$CONFIG_FILE")
-    EDIT_TOKEN=$(awk '{print $2}' "$CONFIG_FILE")
-
-    if [[ -z "$POST_ID" || "$POST_ID" == "null" ]]; then
-        echo "Error: No valid post found to update."
-        exit 1
-    fi
-
-    TEXT="$1"
-    
-    # Send post request to update an existing post
-    send_post_request "$TEXT" "$EDIT_TOKEN" "$POST_ID"
-
-    echo "Post updated: https://write.as/$POST_ID"
-}
-
-# Ensure correct usage
-if [[ ! -f "$CONFIG_FILE" && "$1" != "-i" ]]; then
-    echo "No existing post found. Use -i to create one first!"
-    exit 1
-fi
-
-# Handle options
-case "$1" in
-    -i)
-        shift
-        create_post "$1"
-        ;;
-    -f)
-        shift
-        [[ -f "$1" ]] || { echo "File not found"; exit 1; }
-        update_post "$(cat "$1")"
-        ;;
-    *)
-        update_post "$1"
-        ;;
-esac
+        echo "$POST_ID $EDIT_TOKEN
