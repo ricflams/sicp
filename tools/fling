@@ -60,13 +60,13 @@ send_post_request() {
         curl -s -X POST \
             -H "Content-Type: application/json" \
             -d "$JSON_PAYLOAD" \
-            https://write.as/api/posts > /dev/null
+            https://write.as/api/posts
     else
         # Update an existing post
         curl -s -X POST \
             -H "Content-Type: application/json" \
             --data "$JSON_PAYLOAD" \
-            "https://write.as/api/posts/$POST_ID" > /dev/null
+            "https://write.as/api/posts/$POST_ID"
     fi
 }
 
