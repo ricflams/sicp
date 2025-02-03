@@ -60,14 +60,18 @@ send_post_request() {
             -H "Content-Type: application/json" \
             -d "$JSON_PAYLOAD" \
             https://write.as/api/posts)
+        HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
     else
         RESPONSE=$(curl -s -w "%{http_code}" -X POST \
             -H "Content-Type: application/json" \
             --data "$JSON_PAYLOAD" \
             "https://write.as/api/posts/$POST_ID")
+        HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)  # Extract HTTP status code
+        RESPONSE=$(echo "$RESPONSE" | head -n -1)  # Extract the response body (without HTTP code)
     fi
 
     echo "$RESPONSE"
+    echo "$HTTP_CODE"
 }
 
 # Function to create a new post
@@ -116,13 +120,15 @@ update_post() {
     # Send post request to update an existing post
     RESPONSE=$(send_post_request "$TEXT" "$EDIT_TOKEN" "$POST_ID")
 
-    # Check if the update was successful
+    # Extract the HTTP status code
     HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
+    RESPONSE_BODY=$(echo "$RESPONSE" | head -n -1)
+
     if [[ "$HTTP_CODE" -eq 200 ]]; then
         echo "Post updated: https://write.as/$POST_ID"
     else
         echo "Error updating post: HTTP $HTTP_CODE"
-        echo "$RESPONSE"
+        echo "$RESPONSE_BODY"
     fi
 }
 
