@@ -58,12 +58,14 @@ create_post() {
         '{body: $body, title: $title}')
 
     RESPONSE=$(curl -s -X POST -H "Content-Type: application/json" -d "$JSON_PAYLOAD" https://write.as/api/posts)
-    POST_ID=$(echo "$RESPONSE" | jq -r '.id')
-    EDIT_TOKEN=$(echo "$RESPONSE" | jq -r '.token')
-    POST_URL="https://write.as/$POST_ID"
+    
+    # Extract post ID and edit token from the 'data' field
+    POST_ID=$(echo "$RESPONSE" | jq -r '.data.id')
+    EDIT_TOKEN=$(echo "$RESPONSE" | jq -r '.data.token')
 
     if [[ "$POST_ID" != "null" ]]; then
         echo "$POST_ID $EDIT_TOKEN" > "$CONFIG_FILE"
+        POST_URL="https://write.as/$POST_ID"
         echo "Post created: $POST_URL"
     else
         echo "Error creating post: $RESPONSE"
