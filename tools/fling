@@ -56,22 +56,18 @@ send_post_request() {
 
     # Choose whether it's create or update based on POST_ID
     if [[ -z "$POST_ID" ]]; then
-        RESPONSE=$(curl -s -X POST \
+        # Create a new post
+        curl -s -X POST \
             -H "Content-Type: application/json" \
             -d "$JSON_PAYLOAD" \
-            https://write.as/api/posts)
-        HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
+            https://write.as/api/posts
     else
-        RESPONSE=$(curl -s -w "%{http_code}" -X POST \
+        # Update an existing post
+        curl -s -X POST \
             -H "Content-Type: application/json" \
             --data "$JSON_PAYLOAD" \
-            "https://write.as/api/posts/$POST_ID")
-        HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)  # Extract HTTP status code
-        RESPONSE=$(echo "$RESPONSE" | head -n -1)  # Extract the response body (without HTTP code)
+            "https://write.as/api/posts/$POST_ID"
     fi
-
-    echo "$RESPONSE"
-    echo "$HTTP_CODE"
 }
 
 # Function to create a new post
@@ -118,18 +114,9 @@ update_post() {
     TEXT="$1"
     
     # Send post request to update an existing post
-    RESPONSE=$(send_post_request "$TEXT" "$EDIT_TOKEN" "$POST_ID")
+    send_post_request "$TEXT" "$EDIT_TOKEN" "$POST_ID"
 
-    # Extract the HTTP status code
-    HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
-    RESPONSE_BODY=$(echo "$RESPONSE" | head -n -1)
-
-    if [[ "$HTTP_CODE" -eq 200 ]]; then
-        echo "Post updated: https://write.as/$POST_ID"
-    else
-        echo "Error updating post: HTTP $HTTP_CODE"
-        echo "$RESPONSE_BODY"
-    fi
+    echo "Post updated: https://write.as/$POST_ID"
 }
 
 # Ensure correct usage
