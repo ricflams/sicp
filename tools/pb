@@ -5,9 +5,10 @@ CONFIG_FILE="$HOME/.pb"
 
 # Function to prompt for username and API key and save them to the config file
 prompt_for_credentials() {
-    echo "Please enter your Pastebin username:"
+    # Print the prompt without newline
+    echo -n "Please enter your Pastebin username: "
     read -r username
-    echo "Please enter your Pastebin API key:"
+    echo -n "Please enter your Pastebin API key: "
     read -r api_key
 
     # Save credentials to .pb file
