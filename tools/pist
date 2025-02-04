@@ -46,7 +46,7 @@ fi
 
 # Helper function to escape content for JSON
 escape_json_content() {
-    echo "$1" | jq -R . | tr -d '\n'
+    echo "$1" | jq -Rs .
 }
 
 # Function to fetch the content of the current Gist
@@ -66,7 +66,7 @@ create_gist() {
             "public": false,
             "files": {
                 "pist.txt": {
-                    "content": "'"$content"'"
+                    "content": '"$(escape_json_content "$content")"'
                 }
             }
         }')
@@ -83,11 +83,10 @@ update_gist() {
         -d '{
             "files": {
                 "pist.txt": {
-                    "content": "'"$content"'"
+                    "content": '"$(escape_json_content "$content")"'
                 }
             }
-        }'
-    echo "Gist updated."
+        }' &>/dev/null
 }
 
 # Function to append content to an existing Gist
