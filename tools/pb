@@ -34,7 +34,7 @@ create_paste() {
         -d "api_dev_key=$api_key" \
         -d "api_user_name=$username" \
         -d "api_option=paste" \
-        -d "api_paste_data=$initial_text" \
+        -d "api_paste_code=$initial_text" \
         -d "api_paste_name=$paste_title" \
         -d "api_paste_private=2")
 
@@ -44,6 +44,8 @@ create_paste() {
     # If paste ID is found, save it to the .pb config file
     if [[ ! -z "$paste_id" ]]; then
         echo "Paste created successfully. Paste ID: $paste_id"
+        # Ensure there is only one paste_id entry, replacing it if necessary
+        sed -i '/paste_id=/d' "$CONFIG_FILE"  # Remove any existing paste_id
         echo "paste_id=$paste_id" >> "$CONFIG_FILE"
         echo "Paste URL: https://pastebin.com/$paste_id"
     else
@@ -79,7 +81,7 @@ update_paste() {
         -d "api_user_name=$username" \
         -d "api_option=edit" \
         -d "api_paste_key=$paste_id" \
-        -d "api_paste_data=$new_content" \
+        -d "api_paste_code=$new_content" \
         -d "api_paste_name=$paste_title" \
         -d "api_paste_private=2")
 
@@ -125,7 +127,7 @@ append_paste() {
         -d "api_user_name=$username" \
         -d "api_option=edit" \
         -d "api_paste_key=$paste_id" \
-        -d "api_paste_data=$updated_content" \
+        -d "api_paste_code=$updated_content" \
         -d "api_paste_name=$paste_title" \
         -d "api_paste_private=2")
 
