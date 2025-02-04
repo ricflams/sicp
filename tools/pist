@@ -1,1 +1,108 @@
-init
+#!/bin/bash
+
+CONFIG_FILE="$HOME/.pist"
+GIST_FILE="pist.txt"
+
+# Load config if it exists
+if [[ -f "$CONFIG_FILE" ]]; then
+    source "$CONFIG_FILE"
+fi
+
+print_help() {
+    echo "Usage:"
+    echo "  pist -i               Init a new GitHub Gist note"
+    echo "  pist 'text'           Update the note with text"
+    echo "  pist -a 'text'        Append text to the note"
+    echo "  pist -a -f <file>     Append file content to the note"
+    echo "  pist -f <file>        Upload the file content to the Gist"
+    echo "  pist -h               Show this help"
+}
+
+# Prompt for GitHub credentials & create Gist
+init_gist() {
+    read -p "GitHub Username: " GITHUB_USER
+    read -sp "GitHub Token: " GITHUB_TOKEN
+    echo
+    echo "Creating new Gist..."
+
+    RESPONSE=$(curl -s -X POST "https://api.github.com/gists" \
+        -H "Authorization: token $GITHUB_TOKEN" \
+        -H "Content-Type: application/json" \
+        -d "{\"description\":\"Personal Pist Note\", \"public\":false, \"files\":{\"$GIST_FILE\":{\"content\":\"Welcome to Pist\"}}}")
+
+    GIST_ID=$(echo "$RESPONSE" | jq -r '.id')
+
+    if [[ "$GIST_ID" == "null" || -z "$GIST_ID" ]]; then
+        echo "Error creating Gist"
+        exit 1
+    fi
+
+    echo "Gist created: https://gist.github.com/$GIST_ID"
+    echo -e "GITHUB_USER=\"$GITHUB_USER\"\nGITHUB_TOKEN=\"$GITHUB_TOKEN\"\nGIST_ID=\"$GIST_ID\"" > "$CONFIG_FILE"
+}
+
+# Fetch existing content of the Gist
+get_gist_content() {
+    curl -s -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/gists/$GIST_ID" | jq -r ".files[\"$GIST_FILE\"].content"
+}
+
+# Update Gist with new content
+update_gist() {
+    NEW_CONTENT="$1"
+
+    curl -s -X PATCH "https://api.github.com/gists/$GIST_ID" \
+        -H "Authorization: token $GITHUB_TOKEN" \
+        -H "Content-Type: application/json" \
+        -d "{\"files\":{\"$GIST_FILE\":{\"content\":\"$NEW_CONTENT\"}}}" > /dev/null
+}
+
+# Append text to the existing Gist
+append_to_gist() {
+    EXISTING_CONTENT=$(get_gist_content)
+    NEW_CONTENT="${EXISTING_CONTENT}\n\n$1"
+    update_gist "$NEW_CONTENT"
+}
+
+# Upload file content to Gist
+upload_file() {
+    FILE_PATH="$1"
+    if [[ ! -f "$FILE_PATH" ]]; then
+        echo "File not found: $FILE_PATH"
+        exit 1
+    fi
+
+    FILE_CONTENT=$(<"$FILE_PATH")
+    update_gist "$FILE_CONTENT"
+}
+
+# Append file content to the existing Gist
+append_file_to_gist() {
+    EXISTING_CONTENT=$(get_gist_content)
+    FILE_PATH="$1"
+
+    if [[ ! -f "$FILE_PATH" ]]; then
+        echo "File not found: $FILE_PATH"
+        exit 1
+    fi
+
+    FILE_CONTENT=$(<"$FILE_PATH")
+    NEW_CONTENT="${EXISTING_CONTENT}\n\n$FILE_CONTENT"
+    update_gist "$NEW_CONTENT"
+}
+
+# Main Logic
+case "$1" in
+    -h) print_help ;;
+    -i) init_gist ;;
+    -a) shift
+        if [[ "$1" == "-f" ]]; then
+            shift
+            append_file_to_gist "$1"
+        else
+            append_to_gist "$1"
+        fi
+        ;;
+    -f) shift; upload_file "$1" ;;
+    "") print_help ;;
+    *) update_gist "$1" ;;
+esac
