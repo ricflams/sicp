@@ -93,7 +93,7 @@ update_gist() {
 append_gist() {
     local new_content="$1"
     local existing_content=$(get_gist_content)
-    # Replace newlines with literal newlines for proper formatting
+    # Append new content with a separating newline
     local updated_content="$existing_content$'\n\n'$new_content"
     update_gist "$updated_content"
 }
