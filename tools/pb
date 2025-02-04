@@ -36,10 +36,10 @@ create_paste() {
         -d "api_option=paste" \
         -d "api_paste_code=$initial_text" \
         -d "api_paste_name=$paste_title" \
-        -d "api_paste_private=2")
+        -d "api_paste_private=1")  # Set private=1
 
-    # Extract paste ID from the response
-    paste_id=$(echo "$response" | grep -oP '(?<=\=)([a-zA-Z0-9]+)')
+    # Extract paste ID from the URL response
+    paste_id=$(echo "$response" | grep -oP '(?<=pastebin.com/)([a-zA-Z0-9]+)')
 
     # If paste ID is found, save it to the .pb config file
     if [[ ! -z "$paste_id" ]]; then
@@ -83,7 +83,7 @@ update_paste() {
         -d "api_paste_key=$paste_id" \
         -d "api_paste_code=$new_content" \
         -d "api_paste_name=$paste_title" \
-        -d "api_paste_private=2")
+        -d "api_paste_private=1")  # Set private=1
 
     # No URL output during update, only success message
     echo "Paste updated successfully."
@@ -129,7 +129,7 @@ append_paste() {
         -d "api_paste_key=$paste_id" \
         -d "api_paste_code=$updated_content" \
         -d "api_paste_name=$paste_title" \
-        -d "api_paste_private=2")
+        -d "api_paste_private=1")  # Set private=1
 
     echo "Paste updated successfully."
 }
