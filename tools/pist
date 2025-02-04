@@ -71,7 +71,10 @@ upload_file() {
         exit 1
     fi
 
+    # Read the file content
     FILE_CONTENT=$(<"$FILE_PATH")
+
+    # Update the Gist with the file content
     update_gist "$FILE_CONTENT"
 }
 
@@ -85,7 +88,10 @@ append_file_to_gist() {
         exit 1
     fi
 
+    # Read the file content
     FILE_CONTENT=$(<"$FILE_PATH")
+
+    # Append the file content to the existing content
     NEW_CONTENT="${EXISTING_CONTENT}\n\n$FILE_CONTENT"
     update_gist "$NEW_CONTENT"
 }
