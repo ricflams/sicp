@@ -26,28 +26,13 @@ install_curl() {
     fi
 }
 
-# Check for jq dependency
+# Check for jq and curl dependencies
 if ! command -v jq &>/dev/null; then
-    echo "jq is required but not installed."
-    read -p "Would you like to install jq? (y/n): " install_jq_response
-    if [[ "$install_jq_response" == "y" ]]; then
-        install_jq
-    else
-        echo "jq is required to proceed. Exiting."
-        exit 1
-    fi
+    install_jq
 fi
 
-# Check for curl dependency
 if ! command -v curl &>/dev/null; then
-    echo "curl is required but not installed."
-    read -p "Would you like to install curl? (y/n): " install_curl_response
-    if [[ "$install_curl_response" == "y" ]]; then
-        install_curl
-    else
-        echo "curl is required to proceed. Exiting."
-        exit 1
-    fi
+    install_curl
 fi
 
 # Constants for Gist API
@@ -61,9 +46,7 @@ fi
 
 # Helper function to escape content for JSON
 escape_json_content() {
-    local content="$1"
-    # Escape newlines and special characters for JSON
-    echo "$content" | jq -R . | tr -d '\n'
+    echo "$1" | jq -R . | tr -d '\n'
 }
 
 # Function to fetch the content of the current Gist
@@ -76,7 +59,6 @@ get_gist_content() {
 create_gist() {
     local content="$1"
     local title="$2"
-
     response=$(curl -s -X POST "$GIST_API_URL" \
         -H "Authorization: token $GITHUB_TOKEN" \
         -d '{
@@ -88,17 +70,15 @@ create_gist() {
                 }
             }
         }')
-
     GIST_ID=$(echo "$response" | jq -r '.id')
-    echo "Gist created successfully with ID: $GIST_ID"
+    echo "Gist created with ID: $GIST_ID"
     echo "GIST_ID=$GIST_ID" >> "$GIST_CONFIG_FILE"
 }
 
 # Function to update an existing Gist
 update_gist() {
     local content="$1"
-
-    response=$(curl -s -X PATCH "$GIST_API_URL/$GIST_ID" \
+    curl -s -X PATCH "$GIST_API_URL/$GIST_ID" \
         -H "Authorization: token $GITHUB_TOKEN" \
         -d '{
             "files": {
@@ -106,39 +86,26 @@ update_gist() {
                     "content": "'"$content"'"
                 }
             }
-        }')
-
-    echo "Gist updated successfully."
+        }'
+    echo "Gist updated."
 }
 
 # Function to append content to an existing Gist
 append_gist() {
     local new_content="$1"
-
-    existing_content=$(get_gist_content)
-    updated_content="$existing_content\n\n$new_content"
-
+    local existing_content=$(get_gist_content)
+    local updated_content="$existing_content\n\n$new_content"
     update_gist "$updated_content"
 }
 
-# Initialize or create a new Gist
-init_gist() {
-    if [[ -z "$GITHUB_TOKEN" || -z "$GIST_ID" ]]; then
-        echo "No existing Gist found. Creating a new one."
-
-        # Prompt user for content to initialize Gist
-        echo "Please provide a note to initialize your Gist (a title and content):"
-        read -r title
-        echo "Enter content for your note:"
-        read -r content
-
-        create_gist "$content" "$title"
-    else
-        echo "Existing Gist found with ID: $GIST_ID"
-    fi
+# Function to upload a file to the Gist
+upload_file() {
+    local file="$1"
+    local content=$(cat "$file")
+    update_gist "$content"
 }
 
-# Function to handle the help message
+# Show help message
 show_help() {
     cat << EOF
 Usage: pist [OPTIONS] [TEXT] [FILE]
@@ -150,39 +117,37 @@ Options:
 EOF
 }
 
-# Main functionality
-if [[ "$1" == "-i" ]]; then
-    init_gist
-elif [[ "$1" == "-a" ]]; then
-    if [[ -z "$GIST_ID" ]]; then
-        echo "Error: No existing Gist to append to. Run -i to initialize first."
-        exit 1
-    fi
-
-    if [[ -n "$2" && -f "$2" ]]; then
-        append_file_to_gist "$2"
-    else
-        echo "Please provide a valid file to append."
-        exit 1
-    fi
-elif [[ "$1" == "-f" ]]; then
-    if [[ -n "$2" && -f "$2" ]]; then
-        upload_file "$2"
-    else
-        echo "Please provide a valid file to upload."
-        exit 1
-    fi
-elif [[ "$1" == "-h" ]]; then
-    show_help
-else
-    if [[ -n "$1" ]]; then
+# Main functionality simplified
+case "$1" in
+    -i)
+        init_gist
+        ;;
+    -a)
         if [[ -z "$GIST_ID" ]]; then
-            echo "Error: No existing Gist. Run -i to initialize first."
+            echo "Error: No existing Gist to append to. Run -i to initialize first."
             exit 1
         fi
-
-        update_gist "$1"
-    else
+        append_gist "$2"
+        ;;
+    -f)
+        if [[ -z "$2" || ! -f "$2" ]]; then
+            echo "Error: Please provide a valid file."
+            exit 1
+        fi
+        upload_file "$2"
+        ;;
+    -h)
         show_help
-    fi
-fi
+        ;;
+    *)
+        if [[ -n "$1" ]]; then
+            if [[ -z "$GIST_ID" ]]; then
+                echo "Error: No existing Gist. Run -i to initialize first."
+                exit 1
+            fi
+            update_gist "$1"
+        else
+            show_help
+        fi
+        ;;
+esac
