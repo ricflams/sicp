@@ -1,118 +1,188 @@
 #!/bin/bash
 
-CONFIG_FILE="$HOME/.pist"
-GIST_FILE="pist.txt"
+# Function to install jq
+install_jq() {
+    echo "Installing jq..."
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        sudo apt-get update && sudo apt-get install -y jq
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        brew install jq
+    else
+        echo "Unsupported OS for jq installation. Please install jq manually."
+        exit 1
+    fi
+}
 
-# Load config if it exists
-if [[ -f "$CONFIG_FILE" ]]; then
-    source "$CONFIG_FILE"
+# Function to install curl
+install_curl() {
+    echo "Installing curl..."
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        sudo apt-get update && sudo apt-get install -y curl
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        brew install curl
+    else
+        echo "Unsupported OS for curl installation. Please install curl manually."
+        exit 1
+    fi
+}
+
+# Check for jq dependency
+if ! command -v jq &>/dev/null; then
+    echo "jq is required but not installed."
+    read -p "Would you like to install jq? (y/n): " install_jq_response
+    if [[ "$install_jq_response" == "y" ]]; then
+        install_jq
+    else
+        echo "jq is required to proceed. Exiting."
+        exit 1
+    fi
 fi
 
-print_help() {
-    echo "Usage:"
-    echo "  pist -i               Init a new GitHub Gist note"
-    echo "  pist 'text'           Update the note with text"
-    echo "  pist -a 'text'        Append text to the note"
-    echo "  pist -a -f <file>     Append file content to the note"
-    echo "  pist -f <file>        Upload the file content to the Gist"
-    echo "  pist -h               Show this help"
-}
-
-# Prompt for GitHub credentials & create Gist
-init_gist() {
-    read -p "GitHub Username: " GITHUB_USER
-    read -sp "GitHub Token: " GITHUB_TOKEN
-    echo
-    echo "Creating new Gist..."
-
-    RESPONSE=$(curl -s -X POST "https://api.github.com/gists" \
-        -H "Authorization: token $GITHUB_TOKEN" \
-        -H "Content-Type: application/json" \
-        -d "{\"description\":\"Personal Pist Note\", \"public\":false, \"files\":{\"$GIST_FILE\":{\"content\":\"Welcome to Pist\"}}}")
-
-    GIST_ID=$(echo "$RESPONSE" | jq -r '.id')
-
-    if [[ "$GIST_ID" == "null" || -z "$GIST_ID" ]]; then
-        echo "Error creating Gist"
+# Check for curl dependency
+if ! command -v curl &>/dev/null; then
+    echo "curl is required but not installed."
+    read -p "Would you like to install curl? (y/n): " install_curl_response
+    if [[ "$install_curl_response" == "y" ]]; then
+        install_curl
+    else
+        echo "curl is required to proceed. Exiting."
         exit 1
     fi
+fi
 
-    echo "Gist created: https://gist.github.com/$GIST_ID"
-    echo -e "GITHUB_USER=\"$GITHUB_USER\"\nGITHUB_TOKEN=\"$GITHUB_TOKEN\"\nGIST_ID=\"$GIST_ID\"" > "$CONFIG_FILE"
+# Constants for Gist API
+GIST_API_URL="https://api.github.com/gists"
+GIST_CONFIG_FILE="$HOME/.pist"
+
+# Load config file if it exists
+if [[ -f "$GIST_CONFIG_FILE" ]]; then
+    source "$GIST_CONFIG_FILE"
+fi
+
+# Helper function to escape content for JSON
+escape_json_content() {
+    local content="$1"
+    # Escape newlines and special characters for JSON
+    echo "$content" | jq -R . | tr -d '\n'
 }
 
-# Fetch existing content of the Gist
+# Function to fetch the content of the current Gist
 get_gist_content() {
-    curl -s -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/gists/$GIST_ID" | jq -r ".files[\"$GIST_FILE\"].content"
+    curl -s -H "Authorization: token $GITHUB_TOKEN" \
+        "$GIST_API_URL/$GIST_ID" | jq -r '.files | .[. | keys | .[0]] | .content'
 }
 
-# Update Gist with new content
-update_gist() {
-    NEW_CONTENT="$1"
+# Function to create a new Gist
+create_gist() {
+    local content="$1"
+    local title="$2"
 
-    curl -s -X PATCH "https://api.github.com/gists/$GIST_ID" \
+    response=$(curl -s -X POST "$GIST_API_URL" \
         -H "Authorization: token $GITHUB_TOKEN" \
-        -H "Content-Type: application/json" \
-        -d "{\"files\":{\"$GIST_FILE\":{\"content\":\"$NEW_CONTENT\"}}}" > /dev/null
+        -d '{
+            "description": "Pist note - '"$title"'",
+            "public": false,
+            "files": {
+                "pist.txt": {
+                    "content": "'"$content"'"
+                }
+            }
+        }')
+
+    GIST_ID=$(echo "$response" | jq -r '.id')
+    echo "Gist created successfully with ID: $GIST_ID"
+    echo "GIST_ID=$GIST_ID" >> "$GIST_CONFIG_FILE"
 }
 
-# Append text to the existing Gist
-append_to_gist() {
-    EXISTING_CONTENT=$(get_gist_content)
-    NEW_CONTENT="${EXISTING_CONTENT}\n\n$1"
-    update_gist "$NEW_CONTENT"
+# Function to update an existing Gist
+update_gist() {
+    local content="$1"
+
+    response=$(curl -s -X PATCH "$GIST_API_URL/$GIST_ID" \
+        -H "Authorization: token $GITHUB_TOKEN" \
+        -d '{
+            "files": {
+                "pist.txt": {
+                    "content": "'"$content"'"
+                }
+            }
+        }')
+
+    echo "Gist updated successfully."
 }
 
-# Upload file content to Gist
-upload_file() {
-    FILE_PATH="$1"
-    if [[ ! -f "$FILE_PATH" ]]; then
-        echo "File not found: $FILE_PATH"
+# Function to append content to an existing Gist
+append_gist() {
+    local new_content="$1"
+
+    existing_content=$(get_gist_content)
+    updated_content="$existing_content\n\n$new_content"
+
+    update_gist "$updated_content"
+}
+
+# Initialize or create a new Gist
+init_gist() {
+    if [[ -z "$GITHUB_TOKEN" || -z "$GIST_ID" ]]; then
+        echo "No existing Gist found. Creating a new one."
+
+        # Prompt user for content to initialize Gist
+        echo "Please provide a note to initialize your Gist (a title and content):"
+        read -r title
+        echo "Enter content for your note:"
+        read -r content
+
+        create_gist "$content" "$title"
+    else
+        echo "Existing Gist found with ID: $GIST_ID"
+    fi
+}
+
+# Function to handle the help message
+show_help() {
+    cat << EOF
+Usage: pist [OPTIONS] [TEXT] [FILE]
+Options:
+  -i             Init a new Gist note
+  -a             Append to existing Gist
+  -f FILE        Upload the content of a file to the Gist
+  -h             Show this help message
+EOF
+}
+
+# Main functionality
+if [[ "$1" == "-i" ]]; then
+    init_gist
+elif [[ "$1" == "-a" ]]; then
+    if [[ -z "$GIST_ID" ]]; then
+        echo "Error: No existing Gist to append to. Run -i to initialize first."
         exit 1
     fi
 
-    # Read the file content and debug output
-    echo "Reading file content from $FILE_PATH..."
-    FILE_CONTENT=$(<"$FILE_PATH")
-    echo "File content read successfully, uploading..."
-
-    # Update the Gist with the file content
-    update_gist "$FILE_CONTENT"
-}
-
-# Append file content to the existing Gist
-append_file_to_gist() {
-    EXISTING_CONTENT=$(get_gist_content)
-    FILE_PATH="$1"
-
-    if [[ ! -f "$FILE_PATH" ]]; then
-        echo "File not found: $FILE_PATH"
+    if [[ -n "$2" && -f "$2" ]]; then
+        append_file_to_gist "$2"
+    else
+        echo "Please provide a valid file to append."
         exit 1
     fi
-
-    # Read the file content and debug output
-    echo "Reading file content from $FILE_PATH..."
-    FILE_CONTENT=$(<"$FILE_PATH")
-    echo "File content read successfully, appending..."
-
-    # Append the file content to the existing content
-    NEW_CONTENT="${EXISTING_CONTENT}\n\n$FILE_CONTENT"
-    update_gist "$NEW_CONTENT"
-}
-
-# Main Logic
-case "$1" in
-    -h) print_help ;;
-    -i) init_gist ;;
-    -a) shift
-        if [[ "$1" == "-f" ]]; then
-            shift
-            append_file_to_gist "$1"
-        else
-            append_to_gist "$1"
+elif [[ "$1" == "-f" ]]; then
+    if [[ -n "$2" && -f "$2" ]]; then
+        upload_file "$2"
+    else
+        echo "Please provide a valid file to upload."
+        exit 1
+    fi
+elif [[ "$1" == "-h" ]]; then
+    show_help
+else
+    if [[ -n "$1" ]]; then
+        if [[ -z "$GIST_ID" ]]; then
+            echo "Error: No existing Gist. Run -i to initialize first."
+            exit 1
         fi
-        ;;
-    -f) shift; upload_file "$1" ;;
-    "") print_help ;;
-    *) update_gist "$1" ;;
-esac
+
+        update_gist "$1"
+    else
+        show_help
+    fi
+fi
