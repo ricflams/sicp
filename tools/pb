@@ -1,22 +1,20 @@
 #!/bin/bash
 
-# Set path to configuration file
 CONFIG_FILE="$HOME/.pb"
 
-# Function to prompt for username and API key and save them to the config file
+# Function to prompt for username and API key if not already saved
 prompt_for_credentials() {
-    # Print the prompt without newline
-    echo -n "Please enter your Pastebin username: "
+    echo -n "Enter Pastebin username: "
     read -r username
-    echo -n "Please enter your Pastebin API key: "
+    echo -n "Enter Pastebin API key: "
     read -r api_key
 
-    # Save credentials to .pb file
+    # Store the credentials in the config file
     echo "username=$username" > "$CONFIG_FILE"
     echo "api_key=$api_key" >> "$CONFIG_FILE"
 }
 
-# Function to create a new paste (with optional username and API key prompt)
+# Function to create a new paste
 create_paste() {
     # Prompt for username and API key if not already stored
     if [[ ! -f "$CONFIG_FILE" ]]; then
@@ -25,6 +23,9 @@ create_paste() {
         source "$CONFIG_FILE"
     fi
 
+    # Resolve the username and hostname dynamically
+    paste_title="$USER@$(hostname)"
+
     # Hardcoded initial text for the first paste
     initial_text="Welcome to pb"
 
@@ -32,11 +33,10 @@ create_paste() {
     response=$(curl -s -X POST "https://pastebin.com/api/api_post.php" \
         -d "api_dev_key=$api_key" \
         -d "api_user_name=$username" \
-        -d "api_user_password=$password" \
-        -d "api_option=save" \
+        -d "api_option=paste" \
         -d "api_paste_data=$initial_text" \
-        -d "api_paste_name=username@hostname" \
-        -d "api_paste_private=1")
+        -d "api_paste_name=$paste_title" \
+        -d "api_paste_private=2")
 
     # Extract paste ID from the response
     paste_id=$(echo "$response" | grep -oP '(?<=\=)([a-zA-Z0-9]+)')
@@ -57,93 +57,105 @@ update_paste() {
     new_content="$1"
 
     # Check if paste_id exists in the config file
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo "Error: Paste ID not found. Please create a paste first using the -i option."
+        exit 1
+    fi
+
+    # Read the paste_id from the config file
+    source "$CONFIG_FILE"
+
     if [[ -z "$paste_id" ]]; then
         echo "Error: Paste ID not found. Please create a paste first using the -i option."
         exit 1
     fi
+
+    # Resolve the username and hostname dynamically for update
+    paste_title="$USER@$(hostname)"
 
     # Update the paste with the new content using the Pastebin API
     response=$(curl -s -X POST "https://pastebin.com/api/api_post.php" \
         -d "api_dev_key=$api_key" \
         -d "api_user_name=$username" \
-        -d "api_user_password=$password" \
         -d "api_option=edit" \
         -d "api_paste_key=$paste_id" \
         -d "api_paste_data=$new_content" \
-        -d "api_paste_name=username@hostname" \
-        -d "api_paste_private=1")
+        -d "api_paste_name=$paste_title" \
+        -d "api_paste_private=2")
 
     # No URL output during update, only success message
     echo "Paste updated successfully."
 }
 
-# Function to append new content to an existing paste
+# Function to append content to an existing paste
 append_paste() {
-    # Fetch the current paste's content
-    current_content=$(curl -s -X POST "https://pastebin.com/api/api_post.php" \
-        -d "api_dev_key=$api_key" \
-        -d "api_user_name=$username" \
-        -d "api_user_password=$password" \
-        -d "api_option=show_paste" \
-        -d "api_paste_key=$paste_id")
+    # Read the content to append from standard input
+    new_content="$1"
 
-    # Check if paste_id exists
+    # Check if paste_id exists in the config file
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo "Error: Paste ID not found. Please create a paste first using the -i option."
+        exit 1
+    fi
+
+    # Read the paste_id from the config file
+    source "$CONFIG_FILE"
+
     if [[ -z "$paste_id" ]]; then
         echo "Error: Paste ID not found. Please create a paste first using the -i option."
         exit 1
     fi
 
-    # Append the new content to the current paste's content
+    # Resolve the username and hostname dynamically for update
+    paste_title="$USER@$(hostname)"
+
+    # Fetch the current content of the paste using the Pastebin API
+    current_content=$(curl -s -X POST "https://pastebin.com/api/api_post.php" \
+        -d "api_dev_key=$api_key" \
+        -d "api_user_name=$username" \
+        -d "api_option=show_paste" \
+        -d "api_paste_key=$paste_id")
+
+    # Append the new content with a separating empty line
     updated_content="$current_content\n\n$new_content"
 
     # Update the paste with the appended content
-    update_paste "$updated_content"
+    response=$(curl -s -X POST "https://pastebin.com/api/api_post.php" \
+        -d "api_dev_key=$api_key" \
+        -d "api_user_name=$username" \
+        -d "api_option=edit" \
+        -d "api_paste_key=$paste_id" \
+        -d "api_paste_data=$updated_content" \
+        -d "api_paste_name=$paste_title" \
+        -d "api_paste_private=2")
+
+    echo "Paste updated successfully."
 }
 
-# Function to handle displaying help
-show_help() {
-    echo "Usage: pb [options] [text]"
-    echo "Options:"
-    echo "  -i       Init a new pastebin note"
-    echo "  -f FILE  Update paste with content from the file"
-    echo "  -a       Append new content to the existing paste"
-    echo "  -h       Show this help message"
-    echo "If no options are provided, upload the provided text as a new paste."
-}
-
-# If no arguments are provided, display help
-if [[ $# -eq 0 ]]; then
-    show_help
-    exit 0
-fi
-
-# Parse command-line arguments
-while getopts "iahf:" opt; do
-    case "$opt" in
-        i)  # Create a new paste with hardcoded text
-            create_paste
-            exit 0
-            ;;
-        f)  # Update paste with content from file
-            update_paste "$(cat "$OPTARG")"
-            exit 0
-            ;;
-        a)  # Append new content to the existing paste
-            append_paste "$1"
-            exit 0
-            ;;
-        h)  # Show help
-            show_help
-            exit 0
-            ;;
-        *)  # Default action for direct text input
-            update_paste "$1"
-            exit 0
-            ;;
-    esac
-done
-
-# If no options were provided, the first argument is assumed to be text
-if [[ $# -gt 0 ]]; then
-    update_paste "$1"
-fi
+# Handle script arguments
+case "$1" in
+    -i)
+        create_paste
+        ;;
+    -a)
+        if [[ -z "$2" ]]; then
+            echo "Error: Content required to append."
+            exit 1
+        fi
+        append_paste "$2"
+        ;;
+    -h)
+        echo "Usage: pb [-i] [-a content] [-h]"
+        echo "  -i    Init a new pastebin note (create a new paste)"
+        echo "  -a    Append new content to the existing paste"
+        echo "  -h    Show this help message"
+        echo "If no options are provided, update the paste with the provided text."
+        ;;
+    *)
+        if [[ -z "$1" ]]; then
+            echo "Error: No text or option provided. Use -h for help."
+            exit 1
+        fi
+        update_paste "$1"
+        ;;
+esac
