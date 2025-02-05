@@ -1,8 +1,9 @@
 #lang sicp
+(#%require "util.rkt")
 
 ;; exercise 1.22
-(display "exercise 1.22")
-(newline)
+(display "exercise 1.22\n")
+
 
 (define (smallest-divisor n)
   (define (find-divisor n test-divisor)
@@ -26,10 +27,7 @@
       false))
 
 (define (report-prime n elapsed-time)
-  (display n)
-  (display " *** ")
-  (display (/ elapsed-time 1000.0))
-  (newline)
+  (print n " *** " (/ elapsed-time 1000.0) " msec")
   #t)
 
 

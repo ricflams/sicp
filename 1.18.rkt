@@ -1,8 +1,9 @@
 #lang sicp
+(#%require "util.rkt")
 
 ;; exercise 1.18
-(display "exercise 1.18")
-(newline)
+(display "exercise 1.18\n")
+
 
 (#%require "math.rkt")
 
@@ -15,6 +16,6 @@
 	  (else (iterate a (- b 1) (+ sum a)))))
   (iterate a b 0))
 
-(mult 5 7)
-(mult 6 8)
-(mult 7 9)
+(print-eval (mult 5 7))
+(print-eval (mult 6 8))
+(print-eval (mult 7 9))

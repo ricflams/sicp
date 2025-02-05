@@ -1,8 +1,9 @@
 #lang sicp
+(#%require "util.rkt")
 
 ;; exercise 1.15
-(display "exercise 1.15")
-(newline)
+(display "exercise 1.15\n")
+
 
 (define (sine angle)
   (define (cube x) (* x x x))
@@ -25,6 +26,5 @@
 ;;  =>  n => cuberoot(10 angle)
 ;;
 ;; For angle=12.15 then n=cuberoot(121.5) which is just below 5 (5^3 = 125)
-(display "p is called 5 times")
-(display "order is O(cuberoot(angle))")
-(newline)
+(display "p is called 5 times\n")
+(display "order is O(cuberoot(angle))\n")

@@ -1,8 +1,9 @@
 #lang sicp
+(#%require "util.rkt")
 
 ;; exercise 1.12
-(display "exercise 1.12")
-(newline)
+(display "exercise 1.12\n")
+
 
 (define (tri row col)
   ;; let both row and col start at 1

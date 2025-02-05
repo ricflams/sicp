@@ -1,8 +1,9 @@
 #lang sicp
+(#%require "util.rkt")
 
 ;; exercise 1.11
-(display "exercise 1.11")
-(newline)
+(display "exercise 1.11\n")
+
 
 (define (f n)
   (if (< n 3)
@@ -12,16 +13,15 @@
        (* 2 (f (- n 2)))
        (* 3 (f (- n 3))))))
 
-(display "f recursive:\n")
-(f 1)
-(f 2)
-(f 3)
-(f 4)
-(f 5)
-(f 6)
-(f 7)
+(print-eval (f 1))
+(print-eval (f 2))
+(print-eval (f 3))
+(print-eval (f 4))
+(print-eval (f 5))
+(print-eval (f 6))
+(print-eval (f 7))
 
-(define (f2  n)
+(define (f-iterative  n)
   (define (iter a b c n)
     (if (= n 0)
 	a
@@ -30,11 +30,10 @@
       n
       (iter 2 1 0 (- n 2))))
 
-(display "f iterative:\n")
-(f2 1)
-(f2 2)
-(f2 3)
-(f2 4)
-(f2 5)
-(f2 6)
-(f2 7)
+(print-eval (f-iterative 1))
+(print-eval (f-iterative 2))
+(print-eval (f-iterative 3))
+(print-eval (f-iterative 4))
+(print-eval (f-iterative 5))
+(print-eval (f-iterative 6))
+(print-eval (f-iterative 7))

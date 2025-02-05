@@ -1,8 +1,9 @@
 #lang sicp
+(#%require "util.rkt")
 
 ;; exercise 1.27
-(display "exercise 1.27")
-(newline)
+(display "exercise 1.27\n")
+
 
 ;; Bring in the prime-test from exercise 1.21
 (#%require "expmod.rkt")

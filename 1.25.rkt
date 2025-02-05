@@ -1,8 +1,9 @@
 #lang sicp
+(#%require "util.rkt")
 
 ;; exercise 1.25
-(display "exercise 1.25")
-(newline)
+(display "exercise 1.25\n")
+
 
 ;;(#%require "expmod.rkt") -- added inline here
 (#%require "math.rkt")
@@ -21,7 +22,8 @@
 ;; Q: why not have expmod use the fast-expt helper?
 (define (expmod2 base exp m)
   (remainder (fast-expt base exp) m))
-;; A: the shorter version works too
+;; A: the shorter version works too, it seems!
+
 
   ;; (remainder (fast-expt base exp) m))   =>
   ;; (remainder
@@ -34,9 +36,9 @@
   ;; 	  (else (remainder (* base (fast-expt base (- exp 1))) m))  =>
   ;;  the expmod
 
-(expmod 2 16 7777)
-(expmod2 2 16 7777)
-(expmod 2 15 5555)
-(expmod2 2 15 5555)
+(print-eval (expmod 2 16 7777))
+(print-eval (expmod2 2 16 7777))
+(print-eval (expmod 2 15 5555))
+(print-eval (expmod2 2 15 5555))
 
 

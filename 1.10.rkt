@@ -1,8 +1,9 @@
 #lang sicp
+(#%require "util.rkt")
 
 ;; exercise 1.10
-(display "exercise 1.10")
-(newline)
+(display "exercise 1.10\n")
+
 
 (#%require "expt.rkt")
 
@@ -12,20 +13,19 @@
 	((= y 1) 2)
 	(else (A (- x 1)
 		 (A x (- y 1))))))
-(A 1 10)
-(A 2 4)
-(A 3 3)
+(print-eval (A 1 10))
+(print-eval (A 2 4))
+(print-eval (A 3 3))
 
 (define (verify f1 f2 n)
   (define (verify-values a b)
-    (display
+    (print
      (if (= a b)
 	 "true: "
-	 "NOT TRUE: "))
-    (display a)
-    (display " = ")
-    (display b)
-    (newline))
+	 "NOT TRUE: ")
+     a
+     " = "
+     b))
   (verify-values (f1 n) (f2 n)))
       
 

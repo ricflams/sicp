@@ -1,8 +1,9 @@
 #lang sicp
+(#%require "util.rkt")
 
 ;; exercise 1.21
-(display "exercise 1.21")
-(newline)
+(display "exercise 1.21\n")
+
 
 (define (smallest-divisor n)
   (define (find-divisor n test-divisor)
@@ -17,9 +18,9 @@
 (define (prime? n)
   (= (smallest-divisor n) n))
 
-(smallest-divisor 199)
-(smallest-divisor 1999)
-(smallest-divisor 19999)
+(print-eval (smallest-divisor 199))
+(print-eval (smallest-divisor 1999))
+(print-eval (smallest-divisor 19999))
 
 
 

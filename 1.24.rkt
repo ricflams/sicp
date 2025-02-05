@@ -1,8 +1,9 @@
 #lang sicp
+(#%require "util.rkt")
 
 ;; exercise 1.24
-(display "exercise 1.24")
-(newline)
+(display "exercise 1.24\n")
+
 
 (#%require "expmod.rkt")
 
@@ -27,12 +28,8 @@
       #f))
 
 (define (report-prime n elapsed-time)
-  (display n)
-  (display " *** ")
-  (display (/ elapsed-time 1000.0))
-  (newline)
+  (print n " *** " (/ elapsed-time 1000.0) " msec")
   #t)
-
 
 
 (define (test-for-primes start count)

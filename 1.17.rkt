@@ -1,8 +1,9 @@
 #lang sicp
+(#%require "util.rkt")
 
 ;; exercise 1.17
-(display "exercise 1.17")
-(newline)
+(display "exercise 1.17\n")
+
 
 (define (mult a b)
   (define (double x) (* x 2))
@@ -11,6 +12,6 @@
 	((even? b) (mult (double a) (halve b)))
 	(else (+ a (mult a (- b 1))))))
 
-(mult 5 7)
-(mult 6 8)
-(mult 7 9)
+(print-eval (mult 5 7))
+(print-eval (mult 6 8))
+(print-eval (mult 7 9))

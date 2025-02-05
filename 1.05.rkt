@@ -1,8 +1,9 @@
 #lang sicp
+(#%require "util.rkt")
 
 ;; exercise 1.5
-(display "exercise 1.5")
-(newline)
+(display "exercise 1.5\n")
+
 
 (define (p) (p)) ;; if evalated then p will loop forever
 

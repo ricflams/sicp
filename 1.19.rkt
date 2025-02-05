@@ -1,8 +1,9 @@
 #lang sicp
+(#%require "util.rkt")
 
 ;; exercise 1.19
-(display "exercise 1.19")
-(newline)
+(display "exercise 1.19\n")
+
 
 (#%require "math.rkt")
 
@@ -13,12 +14,12 @@
 	(fib-iter (+ a b) a (- count 1))))
   (fib-iter 1 0 n))
 
-(fib 3)
-(fib 4)
-(fib 5)
-(fib 10)
-(fib 20)
-(fib 30)
+(print-eval (fib 3))
+(print-eval (fib 4))
+(print-eval (fib 5))
+(print-eval (fib 10))
+(print-eval (fib 20))
+(print-eval (fib 30))
 
 
 ;;       a' = bq + aq + ap
@@ -63,12 +64,12 @@
 		     (- count 1)))))
   (fib-iter 1 0 0 1 n))
 
-(fib-fast 3)
-(fib-fast 4)
-(fib-fast 5)
-(fib-fast 10)
-(fib-fast 20)
-(fib-fast 30)
+(print-eval (fib-fast 3))
+(print-eval (fib-fast 4))
+(print-eval (fib-fast 5))
+(print-eval (fib-fast 10))
+(print-eval (fib-fast 20))
+(print-eval (fib-fast 30))
 
 
 		 

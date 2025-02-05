@@ -1,8 +1,9 @@
 #lang sicp
+(#%require "util.rkt")
 
 ;; exercise 1.8
-(display "exercise 1.8")
-(newline)
+(display "exercise 1.8\n")
+
 
 (define (cube-root x)
   (define (iter guess)
@@ -19,10 +20,10 @@
     (< (abs (- x (* guess guess guess))) (/ guess 100000000)))
   (iter 1.0))
 
-(cube-root 27)
-(cube-root 1000000)
-(cube-root 10000000000)
-; (cube-root 100000000000000000)
-; (cube-root 1.2)
-; (cube-root 0.001)
+(print-eval (cube-root 27))
+(print-eval (cube-root 1000000))
+(print-eval (cube-root 10000000000))
+;;(print-eval (cube-root 100000000000000000))
+;;(print-eval (cube-root 1.2))
+;;(print-eval (cube-root 0.001))
 

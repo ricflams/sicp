@@ -1,8 +1,9 @@
 #lang sicp
+(#%require "util.rkt")
 
 ;; exercise 1.20
-(display "exercise 1.20")
-(newline)
+(display "exercise 1.20\n")
+
 
 (define (gcd a b)
   (if (= b 0)

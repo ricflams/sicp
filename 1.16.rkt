@@ -1,8 +1,9 @@
 #lang sicp
+(#%require "util.rkt")
 
 ;; exercise 1.16
-(display "exercise 1.16")
-(newline)
+(display "exercise 1.16\n")
+
 
 (#%require "math.rkt")
 
@@ -11,10 +12,10 @@
 	((even? n) (square (fast-expt b (/ n 2))))
 	(else (* b (fast-expt b (- n 1))))))
 
-(fast-expt 2 16)
-(fast-expt 2 31)
-(fast-expt 2 32)
-(fast-expt 2 1000)
+(print-eval (fast-expt 2 16))
+(print-eval (fast-expt 2 31))
+(print-eval (fast-expt 2 32))
+(print-eval (fast-expt 2 1000))
 
 (define (fast-expt-iterative b n)
   (define (iterate b n a)
@@ -23,8 +24,8 @@
 	  (else (iterate b (- n 1) (* b a)))))
   (iterate b n 1))
 
-(fast-expt-iterative 2 16)
-(fast-expt-iterative 2 31)
-(fast-expt-iterative 2 32)
-(fast-expt-iterative 2 1000)
+(print-eval (fast-expt-iterative 2 16))
+(print-eval (fast-expt-iterative 2 31))
+(print-eval (fast-expt-iterative 2 32))
+(print-eval (fast-expt-iterative 2 1000))
 
