@@ -69,16 +69,25 @@
 (define (my-remainder a b)
   (remainder a b))
 
+(define-syntax my-remainder-2
+  (syntax-rules ()
+    [(my-remainder-2 a b) (my-remainder a b)]))
+
+(define-syntax gcd-normal-order-2
+  (syntax-rules ()
+    [(gcd-normal-order-2 a b)
+     (if (= (b) 0)
+	 (a)
+	 (gcd-normal-order-2 b (my-remainder-2 a b)))]))
+
 (define (gcd-normal-order a b)
-  (if (= b 0)
-      a
-      (force (gcd-normal-order-thunk b (my-remainder a b)))))
-(define (gcd-normal-order-thunk a b)
-  (delay (gcd-normal-order a b)))
+  (if (= (force b) 0)
+      (force a)
+      (gcd-normal-order b (delay (my-remainder a b)))))
 
 (trace my-remainder)
 
-(force (gcd-normal-order-thunk 206 40))
+(gcd-normal-order-2 (lambda () 206) (lambda () 40))
 
 
 
