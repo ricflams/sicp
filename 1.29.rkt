@@ -1,11 +1,10 @@
 #lang sicp
 (#%require "util.rkt")
+(#%require "math.rkt")
 (#%require racket/trace)
 
 ;; exercise 1.29
 (display "exercise 1.29\n")
-
-(define (cube x) (* x x x))
 
 (define (sum term a next b)
   (if (> a b)
