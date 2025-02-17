@@ -17,3 +17,6 @@
 
 (#%provide inc)
 (define (inc x) (+ x 1))
+
+(#%provide dec)
+(define (dec x) (- x 1))
