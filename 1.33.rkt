@@ -32,7 +32,6 @@
   (= (smallest-divisor n) n))
 
 (define (identity x) x)
-(define (inc x) (+ x 1))
 
 
 (define (sum-of-square-of-primes a b)

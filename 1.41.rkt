@@ -1,5 +1,6 @@
 #lang sicp
 (#%require "util.rkt")
+(#%require "math.rkt")
 
 ;; exercise 1.41
 (display "exercise 1.41\n")
@@ -7,8 +8,6 @@
 (define (double f)
   (lambda (x)
     (f (f x))))
-
-(define (inc x) (+ x 1))
 
 (print-eval-verify ((double inc) 3) 5)
 

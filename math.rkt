@@ -14,3 +14,6 @@
 (#%provide average)
 (define (average x y)
   (/ (+ x y ) 2))
+
+(#%provide inc)
+(define (inc x) (+ x 1))

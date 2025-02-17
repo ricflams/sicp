@@ -15,7 +15,6 @@
   (iter a 1))
 
 (define (identity x) x)
-(define (inc x) (+ x 1))
 
 (define (factorial-iterative n)
   (product-iterative identity 1 inc n))

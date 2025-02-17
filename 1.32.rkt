@@ -1,5 +1,6 @@
 #lang sicp
 (#%require "util.rkt")
+(#%require "math.rkt")
 
 ;; exercise 1.32
 (display "exercise 1.32\n")
@@ -30,7 +31,6 @@
 
 
 (define (identity x) x)
-(define (inc x) (+ x 1))
 
 (print-eval-verify (sum-by-accumulator-iterative identity 1 inc 10) 55)
 (print-eval-verify (sum-by-accumulator-recursive identity 1 inc 10) 55)
