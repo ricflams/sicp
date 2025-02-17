@@ -15,17 +15,17 @@
   (iter 1))
 
 ;; The "real" phi value, (1+√5)/2
-(define (phi-is)
+(define (phi-the-value)
   (/ (+ 1 (sqrt 5)) 2))
 
 ;; The cont-frac will find 1/phi
-(define (phi k)
+(define (phi-approx k)
   (/ 1.0
      (cont-frac (lambda (i) 1.0)
                 (lambda (i) 1.0)
                 k)))
 
-(print-eval (phi-is))
-(print-eval (phi 13)) ;; 4 correct decimals at 13 iterations
-(print-eval (phi 12))
-(print-eval (phi 14))
+(print-eval (phi-the-value))
+(print-eval (phi-approx 13)) ;; 4 correct decimals at 13 iterations
+(print-eval (phi-approx 12))
+(print-eval (phi-approx 14))
