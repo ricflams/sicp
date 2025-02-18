@@ -19,10 +19,12 @@
 
 (print-eval (fixed-point cos 1))
 
+;; This does not converge:
 ;; (define (sqrt x)
 ;;   (fixed-point (lambda (y) (/ x y))
 ;;                1.0))
 
+;; Adding average-damping makes it converge
 (define (sqrt x)
   (fixed-point (lambda (y) (average y (/ x y)))
                1.0))
