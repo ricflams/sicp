@@ -9,8 +9,7 @@
   (define (iter guess)
     (if (good-enough? guess)
 	guess
-	(iter (improve guess))
-	))
+	(iter (improve guess))))
   (define (improve guess)
     (/
      (+ (/ x (* guess guess)) (* 2 guess))
