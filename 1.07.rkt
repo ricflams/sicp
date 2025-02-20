@@ -8,9 +8,6 @@
 (#%require "math.rkt")
 
 
-(define (average x y)
-  (/ (+ x y ) 2))
-
 (define (sqrt x)
   (define (sqrt-iter prev-guess guess)
     (if (good-enough? prev-guess guess)
