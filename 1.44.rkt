@@ -16,11 +16,15 @@
 (print-eval ((smooth cos) 0)) ;; is <1 because cos(dx) and cos(-dx) are < 1 so avg is bust
 
 
-(define (repeated f n)
+;; compose from 1.42
+(define (compose f g)
   (lambda (x)
-    (if (= n 0)
-        x
-        (f ((repeated f (- n 1)) x)))))
+    (f (g x))))
+
+(define (repeated f n)
+  (if (= n 0)
+      (lambda (x) x)
+      (compose f (repeated f (- n 1)))))
 
 (define (smooth-n f n)
   (repeated (smooth f) n))
