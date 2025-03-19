@@ -19,7 +19,6 @@
       (lambda ()
 	(print 'expr " -> " expr)))]))
 
-
 (#%provide print-eval-verify)
 (define-syntax print-eval-verify
   (syntax-rules ()
@@ -42,3 +41,21 @@
      (print-with-parenthesis
       (lambda ()
         (print 'expr1 " -> " expr1 "    " 'expr2 " -> " expr2)))]))
+
+(#%provide to-string)
+(define (to-string . items)
+  (string-join
+   (map (lambda (item)
+          (cond
+            [(number? item) (number->string item)]
+            [(symbol? item) (symbol->string item)]
+            [(string? item) item]
+            [(boolean? item) (if item "true" "false")]
+            [(char? item) (string item)]
+            [else (format "~a" item)]))
+        items)
+   ""))
+
+(#%provide with-precision)
+(define (with-precision value decimals)
+  (~r value #:precision decimals))
