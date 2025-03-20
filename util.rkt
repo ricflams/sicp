@@ -59,3 +59,9 @@
 (#%provide with-precision)
 (define (with-precision value decimals)
   (~r value #:precision decimals))
+
+(#%provide with-handlers-sicp)
+(define (with-handlers-sicp code error-handler)
+  (with-handlers ([exn:fail? (lambda (exn)
+                               (error-handler (exn-message exn)))])
+    (code)))
