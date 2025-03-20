@@ -30,17 +30,16 @@
   
 
 ;; exercise 2.1
-(display "exercise 2.1\n")
+(display "\nexercise 2.1\n\n")
+
+(define (rat->string x)
+  (to-string (numer x) "/" (denom x)))
 
 (define (make-rat n d)
   (let ((g (gcd n d)))
     (cons (/ n g) (/ d g))))
 (define (numer x) (car x))
 (define (denom x) (cdr x))
-
-(define (rat->string x)
-  (to-string (numer x) "/" (denom x)))
-
 
 (define one-half (make-rat 1 2))
 (define one-third (make-rat 1 3))
@@ -51,7 +50,7 @@
 (print-eval (rat->string (add-rat one-third one-third)))
 
 ;; exercise 2.2
-(display "exercise 2.2\n")
+(display "\nexercise 2.2\n\n")
 
 (define (make-point x y) (cons x y))
 (define (x-point p) (car p))
@@ -82,7 +81,7 @@
 
  
 ;; exercise 2.3
-(display "exercise 2.3\n")
+(display "\nexercise 2.3\n\n")
 
 ;; D'OH!
 ;; I misread rectangle as triangle - so here's code for triangles first
@@ -143,7 +142,7 @@
   (make-rect-from-points
    (make-point botx boty)
    (make-point topx topy)))
-;; (define (make-rect-from-points bot top)
+;; (define (make-rect-from-points bot top) ;; alternative impl
 ;;   (cons bot top))
 ;; (define (rect-bot r) (car r))
 ;; (define (rect-top r) (cdr r))
@@ -177,7 +176,7 @@
 
 
 ;; exercise 2.4
-(display "exercise 2.4\n")
+(display "\nexercise 2.4\n\n")
 
 (define (pick-first a b) a)
 (define (pick-second a b) b)
@@ -198,7 +197,7 @@
 
 
 ;; exercise 2.5
-(display "exercise 2.5\n")
+(display "\nexercise 2.5\n\n")
 
 ;;     2^a * 3^b = x
 ;; => log(2^a) + log(3^b) = log(x)
@@ -245,7 +244,7 @@
 
 
 ;; exercise 2.6
-(display "exercise 2.6\n")
+(display "\nexercise 2.6\n\n")
 
 (define zero (lambda (f) (lambda (x) x)))
 (define (add-1 n)
@@ -280,11 +279,12 @@
 
 
 ;; exercise 2.7
-(display "exercise 2.7\n")
+(display "\nexercise 2.7\n\n")
 
 (define (add-interval x y)
   (make-interval (+ (lower-bound x) (lower-bound y))
                  (+ (upper-bound x) (upper-bound y))))
+;; why isn't it just the two lowerbounds and two upperbounds?
 
 (define (mul-interval x y)
   (let ((p1 (* (lower-bound x) (lower-bound y)))
@@ -304,24 +304,31 @@
   (cons a b))
 (define (lower-bound x) (car x))
 (define (upper-bound x) (cdr x))
-;;(define tolerance 0.1)
-;;(define (lower-bound x) (* x (- 1 tolerance)))
-;;(define (upper-bound x) (* x (+ 1 tolerance)))
+
+(print-eval-verify (lower-bound (make-interval 3 4)) 3)
+(print-eval-verify (upper-bound (make-interval 3 4)) 4)
                      
 ;; exercise 2.8
-(display "exercise 2.8\n")
+(display "\nexercise 2.8\n\n")
 
 (define (sub-interval x y)
   (make-interval (- (lower-bound x) (upper-bound y))
                  (- (upper-bound x) (lower-bound y))))
 
 ;; exercise 2.9
-(display "exercise 2.9\n")
+(display "\nexercise 2.9\n\n")
+
+(define (fmt i)
+  (to-string
+   (with-precision (lower-bound i) 5)
+   ";"
+   (with-precision (upper-bound i) 5)))
 
 (define (width-of-interval x)
   (/ (- (upper-bound x) (lower-bound x)) 2))
 
 (define (test-interval-width i1 i2)
+  (print "Testing intervals i1=" (fmt i1) " and i2=" (fmt i2))
   (print-eval (width-of-interval i1))
   (print-eval (width-of-interval i2))
   (print-eval (width-of-interval (add-interval i1 i2)))
@@ -334,7 +341,7 @@
 
 
 ;; exercise 2.10
-(display "exercise 2.10\n")
+(display "\nexercise 2.10\n\n")
 
 (define (div-interval-safe x y)
   (if (= (lower-bound y) (upper-bound y))
@@ -344,12 +351,14 @@
        (make-interval (/ 1.0 (upper-bound y))
                       (/ 1.0 (lower-bound y))))))
 
-;; would throw error
-;;(div-interval-safe (make-interval 2 4) (make-interval 3 3))
-
+;; will throw error
+(with-handlers-sicp 
+  (lambda ()
+    (div-interval-safe (make-interval 2 4) (make-interval 3 3)))
+  (lambda (message) (print "Error: " message)))
 
 ;; exercise 2.11
-(display "exercise 2.11\n")
+(display "\nexercise 2.11\n\n")
 
 (define (mul-interval-why-not-just-this-simple? x y)
   (make-interval (* (lower-bound x) (lower-bound y))
@@ -368,12 +377,6 @@
             (make-interval (* x2 y1) (* x1 y2))
             (make-interval (* x2 y2) (* x1 y1))))))
 
-(define (fmt i)
-  (to-string
-   (with-precision (lower-bound i) 5)
-   ";"
-   (with-precision (upper-bound i) 5)))
-
 (define (test-mul-interval x1 x2 y1 y2)
   (let ((x (make-interval x1 x2))
         (y (make-interval y1 y2)))
@@ -382,6 +385,7 @@
           (simp (mul-interval-why-not-just-this-simple? x y)))
       (print (fmt x) " mul " (fmt y) ": orig=" (fmt orig) " opti=" (fmt opti) " simp=" (fmt simp)))))
 
+;; Now test all three methods
 (test-mul-interval 3 3 3 3)
 (test-mul-interval 3 3 3 9)
 (test-mul-interval 3 3 9 3)
@@ -394,7 +398,7 @@
 
 
 ;; exercise 2.12
-(display "exercise 2.12\n")
+(display "\nexercise 2.12\n\n")
 
 (define (make-center-width c w)
   (make-interval (- c w) (+ c w)))
@@ -417,7 +421,7 @@
 
 
 ;; exercise 2.13
-(display "exercise 2.13\n")
+(display "\nexercise 2.13\n\n")
 
 (define (approx-tolerance-of-mul x y)
   (- (* (+ (percent x) 1)
@@ -443,7 +447,7 @@
 
 
 ;; exercise 2.14
-(display "exercise 2.14\n")
+(display "\nexercise 2.14\n\n")
 
 (define (par1 r1 r2)
   (div-interval (mul-interval r1 r2)
@@ -464,6 +468,16 @@
 
 (test-par 100 0.01 100 0.01)
 
+;; exercise 2.15
+
+;; If the same object (eg r1) appear multiple times in an
+;; expression then it must should have the same exact value in
+;; all places, but the indepedently calculated intervals don't
+;; know about that.
+;; Eg for interval x then x/x should always be 1, but it's not:
 (define rx (make-interval 10 50))
 (print (fmt (div-interval rx rx)))
 
+;; exercise 2.16
+
+;; hmmm
