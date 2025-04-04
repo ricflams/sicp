@@ -3,7 +3,10 @@
 (#%require "math.rkt")
 (#%require "expt.rkt")
 (#%require "gcd.rkt")
+(#%require "paint.rkt")
+(#%require sicp-pict)
 (#%require racket/trace)
+
 
 (display "\nexercise 2.17\n\n")
 
@@ -164,3 +167,120 @@
  (lambda (x) (display x) (newline))
  (list 57 321 88))
        
+
+(display "\nexercise 2.24\n\n")
+
+(print-eval (list 1 (list 2 (list 3 4))))
+
+
+(display "\nexercise 2.25\n\n")
+
+(print-eval (car (cdr (car (cdr (cdr (list 1 3 (list 5 7) 9)))))))
+(print-eval (car (car (list (list 7)))))
+(print-eval (cdr (cdr (cdr (cdr (cdr (cdr (cons 1 (cons 2 (cons 3 (cons 4 (cons 5 (cons 6 7)))))))))))))
+
+
+;; exercise 2.26
+(display "\nexercise 2.26\n\n")
+
+(define x (list 1 2 3))
+(define y (list 4 5 6))
+
+(print-eval (append x y))
+(print-eval (cons x y))
+(print-eval (list x y))
+
+
+(display "\nexercise 2.27\n\n")
+
+(define (deep-reverse-xxxx lst)
+  (define (iterate in out)
+    (if (null? in)
+        out
+        (iterate (cdr in) (cons (car in) out))))
+  (iterate lst (list)))
+(define (deep-reverse lst)
+  (if (null? lst)
+      nil
+      (list (deep-reverse (cdr lst)) (deep-reverse (car lst)))))
+
+(define xx (list (list 1 2) (list 3 4)))
+(print-eval xx)
+(print-eval (reverse xx))
+(print-eval (deep-reverse xx))
+
+
+
+;; exercise 2.44
+(display "\nexercise 2.44\n\n")
+
+(paint-to-png wave "wave.png")
+
+
+(define wave2 (beside wave (flip-vert wave)))
+(define wave4 (below wave2 wave2))
+
+(paint-to-png wave2 "wave2.png")
+(paint-to-png wave4 "wave4.png")
+
+(define (flipped-pairs painter)
+  (let ((painter2 (beside painter (flip-vert painter))))
+    (below painter2 painter2)))
+
+
+(paint-to-png (flipped-pairs wave) "wave4-2.png")
+
+
+(define (right-split painter n)
+  (if (= n 0)
+      painter
+      (let ((smaller (right-split painter (- n 1))))
+        (beside painter (below smaller smaller)))))
+
+(paint-to-png (right-split wave 4) "wave-right-split-4.png")
+
+
+(define (corner-split painter n)
+  (if (= n 0)
+      painter
+      (let ((up (up-split painter (- n 1)))
+            (right (right-split painter (- n 1))))
+        (let ((top-left (beside up up))
+              (bottom-right (below right right))
+              (corner (corner-split painter (- n 1))))
+          (beside (below painter top-left)
+                  (below bottom-right corner))))))
+
+(define (up-split painter n)
+  (if (= n 0)
+      painter
+      (let ((smaller (up-split painter (- n 1))))
+        (below painter (beside smaller smaller)))))
+
+(paint-to-png (corner-split wave 4) "wave-corner-split-4.png")
+
+(define (four-corner-split painter n)
+  (let ((corner (corner-split painter n)))
+    (let ((upper (beside (flip-horiz corner) corner)))
+      (below (flip-vert upper) upper))))
+
+(paint-to-png (four-corner-split wave 4) "wave-four-corner-split-4.png")
+
+;; exercise 2.45
+(display "\nexercise 2.45\n\n")
+
+
+(define (split grow dup)
+  (lambda (painter n)
+    (if (= n 0)
+      painter
+      (let ((smaller ((split grow dup) painter (- n 1))))
+        (grow painter (dup smaller smaller))))))
+(define right-splitter (split beside below))
+(define up-splitter (split below beside))
+  
+
+(paint-to-png (right-split wave 4) "wave-right-split-4.png")
+(paint-to-png (up-split wave 4) "wave-up-split-4.png")
+(paint-to-png (right-splitter wave 4) "wave-right-splitter-4.png")
+(paint-to-png (up-splitter wave 4) "wave-up-splitter-4.png")
