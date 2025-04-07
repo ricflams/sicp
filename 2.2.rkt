@@ -193,20 +193,21 @@
 
 (display "\nexercise 2.27\n\n")
 
-(define (deep-reverse-xxxx lst)
-  (define (iterate in out)
-    (if (null? in)
-        out
-        (iterate (cdr in) (cons (car in) out))))
-  (iterate lst (list)))
 (define (deep-reverse lst)
-  (if (null? lst)
-      nil
-      (list (deep-reverse (cdr lst)) (deep-reverse (car lst)))))
+  (cond ((null? lst) nil)
+        ((not (pair? lst)) lst)
+        (else (reverse (map deep-reverse lst)))))
 
 (define xx (list (list 1 2) (list 3 4)))
 (print-eval xx)
 (print-eval (reverse xx))
+(print-eval (reverse (list )))
+(print-eval (reverse (list 1)))
+(print-eval (reverse xx))
+
+;;(trace deep-reverse)
+;;(trace reverse)
+
 (print-eval (deep-reverse xx))
 
 
@@ -284,3 +285,5 @@
 (paint-to-png (up-split wave 4) "wave-up-split-4.png")
 (paint-to-png (right-splitter wave 4) "wave-right-splitter-4.png")
 (paint-to-png (up-splitter wave 4) "wave-up-splitter-4.png")
+
+`(1 2 3)
