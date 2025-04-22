@@ -211,6 +211,118 @@
 (print-eval (deep-reverse xx))
 
 
+(display "\nexercise 2.28\n\n")
+
+;; Lesson: pair? just means "is it a list?", not specifically a pair of two values
+;; Lesson: (cons a (list b c)) => (a b c)
+
+(define (fringe x)
+  (cond ((null? x) x)
+        ((not (pair? x)) (list x))
+        (else (append (fringe (car x)) (fringe (cdr x))))))
+
+(define xf (list (list 1 2) (list 3 4)))
+(print-eval (fringe xf))
+(print-eval (fringe (list xf xf)))
+
+
+(display "\nexercise 2.29\n\n")
+
+(define (make-mobile left right) (list left right))
+(define (make-branch length structure) (list length structure))
+
+;;(define (make-mobile left right) (cons left right)) ;; task d
+;;(define (make-branch length structure) (cons length structure)) ;; task d
+
+(define mob1 (make-mobile
+	      (make-branch 1
+			   (make-mobile
+			    (make-branch 2 3)
+			    (make-branch 4
+					 (make-mobile
+					  (make-branch 5 6)
+					  (make-branch 7 8)))))
+	      (make-branch 6
+			   (make-mobile
+			    (make-branch 9 10)
+			    (make-branch 11 12)))))
+  
+(define (left-branch mob) (car mob))
+(define (right-branch mob) (cadr mob))
+(define (branch-length branch) (car branch))
+(define (branch-structure branch) (cadr branch))
+;;(define (right-branch mob) (cdr mob)) ;; task d
+;;(define (branch-structure branch) (cdr branch)) ;; task d
+
+(define (branch-weight branch)
+  (let ((structure (branch-structure branch)))
+    (if (pair? structure)
+	(total-weight structure)
+	structure)))
+
+(define (total-weight mob)
+  (+ (branch-weight (left-branch mob))
+     (branch-weight (right-branch mob))))
+
+;;(trace total-weight)
+;;(trace branch-structure)
+
+(print-eval-verify (total-weight mob1) (+ 3 6 8 10 12))
+
+(define (mobile-balanced? mob)
+  (let ((left (left-branch mob))
+	(right (right-branch mob)))
+    (= (* (branch-length left) (branch-weight left))
+       (* (branch-length right) (branch-weight right)))))
+
+(print-eval (mobile-balanced? mob1))
+
+;; Using cons instead of list: only the lines marked "task d" are needed
+
+
+(display "\nexercise 2.30\n\n")
+;; TODO
+
+(1)
+
+(display "\nexercise 2.31\n\n")
+;; TODO
+
+(display "\nexercise 2.32\n\n")
+;; TODO
+
+(display "\nexercise 2.33\n\n")
+;; TODO
+
+(display "\nexercise 2.34\n\n")
+;; TODO
+
+(display "\nexercise 2.35\n\n")
+;; TODO
+
+(display "\nexercise 2.36\n\n")
+;; TODO
+
+(display "\nexercise 2.37\n\n")
+;; TODO
+
+(display "\nexercise 2.38\n\n")
+;; TODO
+
+(display "\nexercise 2.39\n\n")
+;; TODO
+
+(display "\nexercise 2.40\n\n")
+;; TODO
+
+(display "\nexercise 2.41\n\n")
+;; TODO
+
+(display "\nexercise 2.42\n\n")
+;; TODO
+
+(display "\nexercise 2.43\n\n")
+;; TODO
 
 ;; exercise 2.44
 (display "\nexercise 2.44\n\n")
