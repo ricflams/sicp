@@ -3,6 +3,7 @@
 (#%require "math.rkt")
 (#%require "expt.rkt")
 (#%require "gcd.rkt")
+(#%require "fib.rkt")
 (#%require "paint.rkt")
 (#%require sicp-pict)
 (#%require racket/trace)
@@ -277,22 +278,136 @@
 
 (print-eval (mobile-balanced? mob1))
 
+;; Make a balanced mobile:
+;; 2*(4+6) == 1*20
+(define mob2 (make-mobile
+	      (make-branch 2
+			   (make-mobile
+			    (make-branch 3 4)
+			    (make-branch 5 6)))
+	      (make-branch 1 20)))
+
+(print-eval (mobile-balanced? mob2))
+
 ;; Using cons instead of list: only the lines marked "task d" are needed
 
 
 (display "\nexercise 2.30\n\n")
-;; TODO
 
-(1)
+(define (square-tree tree)
+  (map (lambda (sub)
+	 (if (pair? sub)
+	     (square-tree sub)
+	     (square sub)))
+	 tree))
+
+(print-eval (square-tree
+	     (list 1
+		   (list 2 (list 3 4) 5)
+		   (list 6 7))))
+
+;; Now direcly, not using map
+;; A bit tricky not to get reversed
+(define (square-tre2 tree)
+  (define (iter squared in)
+    (cond ((null? in) squared)
+	  ((not (pair? in)) (square in))
+	  (else (cons (square-tre2 (car in)) (iter squared (cdr in))))))
+  (iter (list) tree))
+  
+(print-eval (square-tre2
+	     (list 1
+		   (list 2 (list 3 4) 5)
+		   (list 6 7))))
+
 
 (display "\nexercise 2.31\n\n")
-;; TODO
+
+(define (tree-map f tree)
+  (map (lambda (sub)
+	 (if (pair? sub)
+	     (tree-map f sub)
+	     (f sub)))
+	 tree))
+
+(print-eval (tree-map square
+	     (list 1
+		   (list 2 (list 3 4) 5)
+		   (list 6 7))))
+(print-eval (tree-map cube
+	     (list 1
+		   (list 2 (list 3 4) 5)
+		   (list 6 7))))
+
 
 (display "\nexercise 2.32\n\n")
-;; TODO
+
+(define (subsets s)
+  (if (null? s)
+      (list nil)
+      (let ((rest (subsets (cdr s))))
+	;; the result is all these subsets plus the subsets that
+	;; consists of the omitted first element and each subset
+	(append
+	 rest
+	 (map
+	  (lambda (subset)
+	    (cons (car s) subset)) ;; first element plus the subset(s)
+	  rest)))))
+
+(print-eval (subsets (list 1 2 3)))
+
 
 (display "\nexercise 2.33\n\n")
-;; TODO
+
+(define (filter predicate? sequence)
+  (cond ((null? sequence) nil)
+	((predicate? (car sequence))
+	 (cons (car sequence)
+	       (filter predicate? (cdr sequence))))
+	(else (filter predicate? (cdr sequence)))))
+
+(print-eval (filter odd? (list 1 2 3 4 5)))
+
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+	  (accumulate op initial (cdr sequence)))))
+
+(print-eval (accumulate + 0 (list 1 2 3 4 5)))
+(print-eval (accumulate * 1 (list 1 2 3 4 5)))
+(print-eval (accumulate cons nil (list 1 2 3 4 5)))
+
+
+(define (enumerate-interval low high)
+  (if (> low high)
+      nil
+      (cons low (enumerate-interval (+ low 1) high))))
+
+(print-eval (enumerate-interval 2 7))
+
+
+(define (enumerate-tree tree)
+  (cond ((null? tree) nil)
+	((not (pair? tree)) (list tree))
+	(else (append (enumerate-tree (car tree))
+		      (enumerate-tree (cdr tree))))))
+
+(print-eval (enumerate-tree (list 1 (list 2 (list 3 4) 5))))
+
+(define (sum-odd-squares tree)
+  (accumulate + 0 (map square (filter odd? (enumerate-tree tree)))))
+
+(print-eval (sum-odd-squares (list 1 (list 2 (list 3 4) 5))))
+
+(define (even-fibs n)
+  (accumulate cons nil (filter even? (map fib (enumerate-interval 1 n)))))
+
+(print-eval (even-fibs 10))
+
+  
+(1)
 
 (display "\nexercise 2.34\n\n")
 ;; TODO
