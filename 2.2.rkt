@@ -406,20 +406,122 @@
 
 (print-eval (even-fibs 10))
 
-  
-(1)
+
+(define (map2 p sequence)
+  (accumulate
+   (lambda (x y) (cons (p x) y))
+   nil sequence))
+
+(print-eval (map square (list -2 3 7)))
+
+
+(define (append2 seq1 seq2)
+  (accumulate cons seq2 seq1))
+
+(print-eval (append2 (list 1 2 3) (list 4 5 6)))
+(print-eval (append2 (list) (list 4 5 6)))
+(print-eval (append2 (list 1 2 3) (list)))
+
+
+(define (length sequence)
+  (accumulate (lambda (_ sum) (+ sum 1)) 0 sequence))
+
+(print-eval (length (list 1 2 3 4 5)))
+(print-eval (length (list 1)))
+(print-eval (length (list)))
+
 
 (display "\nexercise 2.34\n\n")
-;; TODO
+
+(define (horner-eval x coefficient-sequence)
+  (accumulate
+   (lambda (this-coeff higher-terms) (+ (* higher-terms x) this-coeff))
+   0
+   coefficient-sequence))
+
+;;   1 + 3x  5x^3 + x^5 for x=2
+;; = 1 + 3*2 + 5*8 + 32
+;; = 1 + 6 + 40 + 32 = 79
+(print-eval-verify (horner-eval 2 (list 1 3 0 5 0 1)) 79)
+
 
 (display "\nexercise 2.35\n\n")
+
 ;; TODO
+(define (count-leaves tree)
+  (accumulate
+   (lambda (node sum)
+     (if (pair? node)
+	 (count-leaves node)
+	 1))
+   0
+   ))
+;(print-eval (count-leaves
+;	     (list 1
+;		   (list 2 (list 3 4) 5)
+;		   (list 6 7))))
+
+
 
 (display "\nexercise 2.36\n\n")
-;; TODO
+
+;; uhh, so elegant
+(define (accumulate-n op init seqs)
+  (if (null? (car seqs))
+      nil
+      (cons (accumulate op init (map car seqs))
+	    (accumulate-n op init (map cdr seqs)))))
+
+(print-eval (accumulate-n
+	     +
+	     0
+	     (list
+	      (list 1 2 3)
+	      (list 4 5 6)
+	      (list 7 8 9)
+	      (list 10 11 12))))
+
 
 (display "\nexercise 2.37\n\n")
+
+(define v1 (list 1 2 3 4))
+(define v2 (list 4 5 6 6))
+(define v3 (list 6 7 8 9))
+(define m1 (list v1 v2 v3))
+
+(define (dot-product v w)
+  (accumulate + 0 (map * v w)))
+
+(print-eval-verify (dot-product v1 v1) (+ 1 4 9 16))
+(print-eval-verify (dot-product v2 v2) (+ 16 25 36 36))
+
+;; Interestingly,
+;;  (map op v1 v2 v3 ...) == (accumulate-n op <init> (list v1 v2 v3 ...)
+;;
+;; For example
+;;  (map * v w) == (accumulate-n * 1 (list v w))
+
+
+(define (matrix-*-vector m v)
+  (map (lambda (row) (accumulate + 0 (map * row v))) m))
+
+(print-eval (matrix-*-vector m1 v1))
+(print-eval (matrix-*-vector m1 v2))
+
+;; ohhhh, elegant
+(define (transpose mat)
+  (accumulate-n cons nil mat))
+
+(print-eval (transpose m1))
+
+
 ;; TODO
+;;(define (matrix-*-matrix m n)
+;;  (let ((cols (transpose n)))
+;;    (map  m)))
+;;
+;;(print-eval (matrix-*-matrix m1 m1))
+
 
 (display "\nexercise 2.38\n\n")
 ;; TODO
@@ -438,6 +540,9 @@
 
 (display "\nexercise 2.43\n\n")
 ;; TODO
+
+
+(1)
 
 ;; exercise 2.44
 (display "\nexercise 2.44\n\n")

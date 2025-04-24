@@ -31,8 +31,8 @@
 		(or (and a b) (and (not a) (not b)))
 		(= a b)))
 	  (if (are-equal actual expected)
-	      (print 'expr " -> " actual " 💚")
-	      (print "\n" 'expr " -> " actual " IS NOT EQUAL TO " expected " ❌\n")))))]))
+	      (print 'expr " -> " actual " ok")
+	      (print "\n" 'expr " -> " actual " IS NOT EQUAL TO " expected " :-(\n")))))]))
 
 (#%provide print-eval-compare)
 (define-syntax print-eval-compare
