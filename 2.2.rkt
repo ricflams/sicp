@@ -515,7 +515,7 @@
 (print-eval (transpose m1))
 
 
-;; TODO
+(display "TODO")
 ;;(define (matrix-*-matrix m n)
 ;;  (let ((cols (transpose n)))
 ;;    (map  m)))
@@ -524,25 +524,25 @@
 
 
 (display "\nexercise 2.38\n\n")
-;; TODO
+(display "TODO")
 
 (display "\nexercise 2.39\n\n")
-;; TODO
+(display "TODO")
 
 (display "\nexercise 2.40\n\n")
-;; TODO
+(display "TODO")
 
 (display "\nexercise 2.41\n\n")
-;; TODO
+(display "TODO")
 
 (display "\nexercise 2.42\n\n")
-;; TODO
+(display "TODO")
 
 (display "\nexercise 2.43\n\n")
-;; TODO
+(display "TODO")
 
 
-(1)
+;;(1)
 
 ;; exercise 2.44
 (display "\nexercise 2.44\n\n")
