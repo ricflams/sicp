@@ -199,19 +199,147 @@
 )
 
 
-;;(define (make-sum a1 a2) (list '+ a2 a1))
+(let ()
+  (define (deriv exp var)
+    (cond ((number? exp) 0)
+	  ((variable? exp) (if (same-variable? exp var) 1 0))
+	  ((sum? exp) (make-sum (deriv (addend exp) var)
+				(deriv (augend exp) var)))
+	  ((product? exp)
+	   (make-sum
+	    (make-product (multiplier exp)
+			  (deriv (multiplicand exp) var))
+	    (make-product (multiplicand exp)
+			  (deriv (multiplier exp) var))))
+	  (else
+	   (error "Cannot deal with expression: DERIV" exp))))
+  
+  (define (variable? x) (symbol? x))
+  (define (same-variable? x y)
+    (and (variable? x) (variable? y) (eq? x y)))
+
+  (define (=number? exp val)
+    (and (number? exp) (= exp val)))
+
+  (define (make-sum a1 a2)
+    (cond ((=number? a1 0) a2)
+	  ((=number? a2 0) a1)
+	  ((and (number? a1) (number? a2)) (+ a1 a2))
+	  (else (list '+ a1 a2))))
+
+  (define (make-product a1 a2)
+    (cond ((or (=number? a1 0) (=number? a2 0)) 0)
+	  ((=number? a1 1) a2)
+	  ((=number? a2 1) a1)
+	  ((and (number? a1) (number? a2)) (* a1 a2))
+	  (else (list '* a1 a2))))
+
+  (define (sum? x) (and (pair? x) (eq? (car x) '+)))
+  (define (addend x) (cadr x))  
+  (define (augend x) (caddr x))  
+  (define (product? x) (and (pair? x) (eq? (car x) '*)))
+  (define (multiplier p) (cadr p))
+  (define (multiplicand p) (caddr p))
+
+  (print-eval (deriv '(+ x 3) 'x))
+  (print-eval (deriv '(* x y) 'x))
+  (print-eval (deriv '(* (* x y) (+ x 3)) 'x))
+)
+
 
 
 ;;(display "\nexercise 2.57\n\n")
-;; TODO
+
+;; (let ()
+;;   (define (deriv exp var)
+;;     (cond ((number? exp) 0)
+;; 	  ((variable? exp) (if (same-variable? exp var) 1 0))
+;; 	  ((sum? exp) (make-sum (deriv (addend exp) var)
+;; 				(deriv (augend exp) var)))
+;; 	  ((product? exp)
+;; 	   (make-sum
+;; 	    (make-product (multiplier exp)
+;; 			  (deriv (multiplicand exp) var))
+;; 	    (make-product (multiplicand exp)
+;; 			  (deriv (multiplier exp) var))))
+;; 	  (else
+;; 	   (error "Cannot deal with expression: DERIV" exp))))
+  
+;;   (define (variable? x) (symbol? x))
+;;   (define (same-variable? x y)
+;;     (and (variable? x) (variable? y) (eq? x y)))
+
+;;   (define (=number? exp val)
+;;     (and (number? exp) (= exp val)))
+
+;;   (define (make-sum a1 a2)
+;;     (cond ((=number? a1 0) a2)
+;; 	  ((=number? a2 0) a1)
+;; 	  ((and (number? a1) (number? a2)) (+ a1 a2))
+;; 	  (else (list '+ a1 a2))))
+;;   (define (sum? x) (and (pair? x) (eq? (car x) '+)))
+;;   (define (addend x) (cadr x))
+;;   (define (augend x) (caddr x))
+  
+;;   (define (product? x) (and (pair? x) (eq? (car x) '*)))
+;;   (define (multiplier p) (cadr p))
+;;   (define (multiplicand p) (caddr p))
+;;   (define (make-product a1 a2)
+;;     (cond ((or (=number? a1 0) (=number? a2 0)) 0)
+;; 	  ((=number? a1 1) a2)
+;; 	  ((=number? a2 1) a1)
+;; 	  ((and (number? a1) (number? a2)) (* a1 a2))
+;; 	  (else (list '* a1 a2))))
+
+;;   (print-eval (deriv '(+ x 3) 'x))
+;;   (print-eval (deriv '(* x y) 'x))
+;;   (print-eval (deriv '(* (* x y) (+ x 3)) 'x))
+;; )
 
 
 ;;(display "\nexercise 2.58\n\n")
 ;; TODO
 
 
-;;(display "\nexercise 2.59\n\n")
-;; TODO
+(display "\nexercise 2.59\n\n")
+
+(define (element-of-set? x set)
+  (cond ((null? set) false)
+	((equal? x (car set)) true)
+	(else (element-of-set? x (cdr set)))))
+
+
+(define (adjoin-set x set)
+  (if (element-of-set? x set)
+      set
+      (cons x set)))
+
+(define (intersection-set set1 set2)
+  (cond ((or (null? set1) (null? set2)) '())
+	((element-of-set? (car set1) set2)
+	 (cons (car set1) (intersection-set (cdr set1) set2)))
+	(else (intersection-set (cdr set1) set2))))
+
+(print-eval-verify (element-of-set? 5 '(1 2 3)) #f)
+(print-eval-verify (element-of-set? 2 '(1 2 3)) #t)
+(print-eval (adjoin-set 5 '()))
+(print-eval (adjoin-set 5 '(1 2 3)))
+(print-eval (intersection-set '(1 2 3) '(4 5 6)))
+(print-eval (intersection-set '(1 2 3) '()))
+(print-eval (intersection-set '() '(4 5 6)))
+(print-eval (intersection-set '(1 2 3) '(2 1 4)))
+
+(define (union-set set1 set2)
+  (cond ((null? set1) set2)
+	((null? set2) set1)
+	((element-of-set? (car set1) set2)
+	 (union-set (cdr set1) set2))
+	(else (cons (caro set1) (union-set (cdr set1) set2)))))
+
+(print-eval (union-set '(1 2 3) '(4 5 6)))
+(print-eval (union-set '(1 2 3) '()))
+(print-eval (union-set '() '(4 5 6)))
+(print-eval (union-set '(1 2 3) '(2 1 4)))
 
 
 ;;(display "\nexercise 2.60\n\n")
